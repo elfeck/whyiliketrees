@@ -1,18 +1,44 @@
 # Apparently needed
 (($) -> ) jQuery
 
-DISPLAY_WIDTH = 600
-DISPLAY_HEIGHT = 400
+window.GL = undefined
+window.display = undefined
 
-# OpenGL Context
-GL = undefined
+class window.Display
 
-initGL = (canvas) ->
-  canvas.width DISPLAY_WIDTH
-  canvas.height DISPLAY_HEIGHT
-  GL = canvas[0].getContext "experimental-webgl"
-  shader = new Shader
-  console.log shader
+  constructor: ->
+    @width = 600
+    @height = 400
+
+    @_last = new Date().getTime()
+    @_delta = 0
+    @_printInterval = 2000
+    @_printAccum = 2000
+
+  initGL: (canvas) ->
+    canvas.attr("width", @width)
+    canvas.attr("height", @height)
+    window.GL = canvas[0].getContext "experimental-webgl"
+    GL.clearColor 0.8, 1.0, 1.0, 1.0
+
+  compTime: ->
+    date = new Date()
+    @_delta = date.getTime() - @_last
+    @_last = date.getTime()
+    @_printAccum += @_delta
+    if @_printAccum >= @_printInterval
+      console.log @_delta + "ms delta"
+      @_printAccum = 0
+
+  drawGL: ->
+    GL.clear GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT
+    @compTime()
+
+updateGL = ->
+  window.display.drawGL()
+  window.requestAnimationFrame updateGL
 
 $ ->
-  initGL $("#canvas")
+  window.display = new Display
+  window.display.initGL $("#canvas")
+  updateGL()
