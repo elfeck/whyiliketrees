@@ -37,6 +37,10 @@ class window.Geom
       GL.STATIC_DRAW
     GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, null
 
+  updateGL: ->
+    # for now just inefficient re-upload of the whole buffer
+    @uploadGL()
+
   bindGL: ->
     GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, @_ib
 

@@ -2,10 +2,13 @@ simpleVert = "
 #version 100\n
 precision mediump float;
 
+uniform mat4 mvp_matrix;
+
 attribute vec4 vert_pos;
 
+
 void main() {
-  gl_Position = vert_pos;
+  gl_Position = mvp_matrix * vert_pos;
 }
 "
 
@@ -13,19 +16,23 @@ simpleFrag = "
 #version 100\n
 precision mediump float;
 
+uniform vec4 color;
+
 void main() {
-  gl_FragColor = vec4(0.8, 0.0, 0.0, 1.0);
+  gl_FragColor = color;
 }
 "
 
-class window.Shader
+class window.ShaderProgram
 
   constructor: (@_vertSrc = simpleVert, @_fragSrc = simpleFrag) ->
     @_vertSrc = simpleVert
-    @_vert = undefined
     @_fragSrc = simpleFrag
+    @_vert = undefined
     @_frag = undefined
     @_program = undefined
+
+    @_uniforms = []
 
   initGL: ->
     @_vert = GL.createShader GL.VERTEX_SHADER
@@ -51,9 +58,17 @@ class window.Shader
 
   bindGL: ->
     GL.useProgram @_program
+    for uni in @_uniforms
+      uni.uniform.asUniformGL uni.location
 
   unbindGL: ->
     GL.useProgram null
 
   getAttribLocGL: (name) ->
     return GL.getAttribLocation @_program, name
+
+  addUniformGL: (name, uniform) ->
+    uni =
+      uniform: uniform
+      location: GL.getUniformLocation @_program, name
+    @_uniforms.push uni
