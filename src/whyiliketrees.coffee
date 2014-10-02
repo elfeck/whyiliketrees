@@ -30,8 +30,9 @@ class window.Display
     window.GL = canvas[0].getContext "experimental-webgl", {
       antialias: true
     }
-    console.log GL.getContextAttributes().antialias
-    GL.clearColor 0.8, 1.0, 1.0, 1.0
+    #console.log GL.getContextAttributes().antialias
+    GL.clearColor 0.0, 0.0, 0.0, 1.0
+    GL.enable GL.DEPTH_TEST
 
   initGame: ->
     @_scene = new Scene
@@ -51,7 +52,7 @@ class window.Display
 
   executeDoLogic: ->
     @compTime()
-    @_scene.delegateDoLogic(@_delta)
+    @_scene.delegateDoLogic @_delta
 
   # maybe more scenes later
   currentScene: ->

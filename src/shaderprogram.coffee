@@ -2,13 +2,15 @@ simpleVert = "
 #version 100\n
 precision mediump float;
 
-uniform mat4 mvp_matrix;
-
 attribute vec4 vert_pos;
+attribute vec4 vert_col;
+
+varying vec4 frag_col;
 
 
 void main() {
-  gl_Position = mvp_matrix * vert_pos;
+  gl_Position = vert_pos;
+  frag_col = vec4(vert_col);
 }
 "
 
@@ -16,10 +18,10 @@ simpleFrag = "
 #version 100\n
 precision mediump float;
 
-uniform vec4 color;
+varying vec4 frag_col;
 
 void main() {
-  gl_FragColor = color;
+  gl_FragColor = frag_col;
 }
 "
 
