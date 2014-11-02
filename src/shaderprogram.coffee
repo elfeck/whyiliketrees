@@ -5,11 +5,13 @@ precision mediump float;
 attribute vec4 vert_pos;
 attribute vec4 vert_col;
 
+uniform vec3 camera_pos;
+uniform mat4 p_matrix;
+
 varying vec4 frag_col;
 
-
 void main() {
-  gl_Position = vert_pos;
+  gl_Position = p_matrix * (vert_pos + vec4(camera_pos.xyz, 0.0));
   frag_col = vec4(vert_col);
 }
 "

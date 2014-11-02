@@ -2,20 +2,15 @@
 
 window.GL = undefined
 window.display = undefined
+window.camera = undefined
+window.input = undefined
 
 class window.Display
 
-  @width = 600
-  @height = 400
-
-  @mvpMatrix = new Mat [
-    [1.0 / @width, 0, 0, 0],
-    [0, 1.0 / @height, 0, 0],
-    [0, 0, 1, 0],
-    [0, 0, 0, 1]
-  ]
-
   constructor: ->
+
+    @width = 400
+    @height = 400
 
     @_last = new Date().getTime()
     @_delta = 0
@@ -25,16 +20,27 @@ class window.Display
     @_scene = undefined
 
   initGL: (canvas) ->
-    canvas.attr("width", Display.width)
-    canvas.attr("height", Display.height)
+    canvas.attr("width", @width)
+    canvas.attr("height", @height)
     window.GL = canvas[0].getContext "experimental-webgl", {
       antialias: true
     }
     #console.log GL.getContextAttributes().antialias
     GL.clearColor 0.0, 0.0, 0.0, 1.0
+    GL.clearDepth 1.0
+
+    #GL.enable GL.CULL_FACE
+    #GL.cullFace GL.BACK
+    #GL.frontFace GL.CCW
+
     GL.enable GL.DEPTH_TEST
+    #GL.depthMask GL.TRUE
+    GL.depthFunc GL.LEQUAL
+    GL.depthRange 0.0, 1.0
 
   initGame: ->
+    window.input = new Input canvas
+    window.camera = new Camera
     @_scene = new Scene
 
   compTime: ->
@@ -47,11 +53,13 @@ class window.Display
       @_printAccum = 0
 
   executeDrawGL: ->
-    GL.clear GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT
+    GL.clear (GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT)
     @_scene.delegateDrawGL()
 
   executeDoLogic: ->
     @compTime()
+
+    window.camera.doLogic @_delta
     @_scene.delegateDoLogic @_delta
 
   # maybe more scenes later
