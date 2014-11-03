@@ -8,23 +8,23 @@ class window.Geom
     @_vb = undefined
     @_ib = undefined
 
+    @_layout = []
+
   initGL: (program, attribNames) ->
     @_vb = GL.createBuffer()
     @_ib = GL.createBuffer()
 
-    GL.bindBuffer(GL.ARRAY_BUFFER, @_vb)
-    GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, @_ib)
+    #GL.bindBuffer(GL.ARRAY_BUFFER, @_vb)
+    #GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, @_ib)
 
     offset = 0
     for own name, size of attribNames
-      attribNames[name] = [size, offset]
+      @_layout[program.getAttribLocGL(name)] = [size, offset]
       offset += size
       @_stride += size
-    for own name, info of attribNames
-      @setAttribGL program.getAttribLocGL(name), info[0], info[1]
 
-    GL.bindBuffer(GL.ARRAY_BUFFER, null)
-    GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, null)
+    #GL.bindBuffer(GL.ARRAY_BUFFER, null)
+    #GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, null)
 
   uploadGL: ->
     GL.bindBuffer GL.ARRAY_BUFFER, @_vb
@@ -42,9 +42,14 @@ class window.Geom
     @uploadGL()
 
   bindGL: ->
+    GL.bindBuffer GL.ARRAY_BUFFER, @_vb
     GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, @_ib
 
+    for own index, info of @_layout
+      @setAttribGL index, info[0], info[1]
+
   unbindGL: ->
+    GL.bindBuffer GL.ARRAY_BUFFER, null
     GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, null
 
   setAttribGL: (index, size, offset) ->

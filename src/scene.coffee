@@ -2,7 +2,9 @@ class window.Scene
 
   constructor: ->
     @_entities = [
-      new MyTree
+      new MyTree(1, [0.0, 0.0, 0.0]),
+      new MyTree(0.5, [1.25, 0.0, 0.0]),
+      new MyTree(0.25, [2.0, 0.0, 0.0])
     ]
 
   delegateDrawGL: ->

@@ -1,10 +1,11 @@
 class window.MyTree
 
-  constructor: ->
+  constructor: (s, offs) ->
     @_program = new ShaderProgram
     @_program.initGL()
+    @_program.addUniformGL "offset", new Vec(offs)
 
-    window.camera.addToProgram @_program
+    window.camera.addPToProgram @_program
 
     attribs =
       "vert_pos": 4
@@ -13,33 +14,31 @@ class window.MyTree
     @_geom = new Geom
     @_geom.initGL(@_program, attribs)
 
-    fz = -1.0
-    bz = -1.5
     @_geom.vData = [
       #green
-      -0.25, -0.25, fz, 1.0,
+      0, 0, 0.0, 1.0,
       0.0, 1.0, 0.0, 1.0,
 
-      0.25, -0.25, fz, 1.0,
+      s, 0, 0.0, 1.0,
       0.0, 1.0, 0.0, 1.0,
 
-      0.25, 0.25, fz, 1.0,
+      s, s, 0.0, 1.0,
       0.0, 1.0, 0.0, 1.0,
 
-      -0.25, 0.25, fz, 1.0,
+      0, s, 0.0, 1.0,
       0.0, 1.0, 0.0, 1.0,
 
       #red
-      -0.25, -0.25, bz, 1.0,
+      0, 0, -s, 1.0,
       1.0, 0.0, 0.0, 1.0,
 
-      0.25, -0.25, bz, 1.0,
+      s, 0, -s, 1.0,
       1.0, 0.0, 0.0, 1.0,
 
-      0.25, 0.25, bz, 1.0,
+      s, s, -s, 1.0,
       1.0, 0.0, 0.0, 1.0,
 
-      -0.25, 0.25, bz, 1.0,
+      0, s, -s, 1.0,
       1.0, 0.0, 0.0, 1.0
     ]
 
