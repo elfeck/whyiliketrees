@@ -9,7 +9,7 @@ class window.Display
 
   constructor: ->
 
-    @width = 400
+    @width = 600
     @height = 400
 
     @_last = new Date().getTime()

@@ -3,9 +3,9 @@ class window.MyTree
   constructor: (s, offs) ->
     @_program = new ShaderProgram
     @_program.initGL()
-    @_program.addUniformGL "offset", new Vec(offs)
+    @_program.addUniformGL "offset", new Vec(3, offs)
 
-    window.camera.addPToProgram @_program
+    window.camera.addPVToProgram @_program
 
     attribs =
       "vert_pos": 4
