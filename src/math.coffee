@@ -9,6 +9,7 @@ class window.Vec
       console.log "Mismatched dim in vector add"
     for i in [0..@dim-1] by 1
       @data[i] += v.data[i]
+    return this
 
   multScalar: (s) ->
     for i in [0..@dim-1] by 1
@@ -44,7 +45,7 @@ class window.Vec
       when 3 then GL.uniform3f loc, @data[0], @data[1], @data[2]
       when 4 then GL.uniform4f loc, @data[0], @data[1], @data[2], @data[3]
       else console.log "Invalid Uniform Attempt in math.coffee::Vec"
-
+    return
 
   @multScalar: (v, s) ->
     nv = new Vec v.dim, v.data.slice()
@@ -61,11 +62,13 @@ class window.Mat
       console.log "Cannot load id on unsym Mat in math.coffe::Mat"
     else
       @data[i * @dimX + i] = 1.0 for i in [0..@dimY - 1] by 1
+    return this
 
   setTo: (m) ->
     @dimX = m.dimX
     @dimY = m.dimY
-    @data = m.data
+    @data = m.data.slice()
+    return this
 
   asUniformGL: (loc) ->
     switch @dimX
@@ -73,6 +76,7 @@ class window.Mat
       when 3 then GL.uniformMatrix3fv loc, false, new Float32Array @data
       when 4 then GL.uniformMatrix4fv loc, false, new Float32Array @data
       else console.log "Invalid Uniform Attempt in math.coffe::Mat"
+    return
 
   @mult: (a, b) ->
     if a.dimX is not b.dimY

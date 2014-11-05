@@ -8,16 +8,16 @@ class window.Camera
 
     n = 1.0
     f = 100.0
-
-    l = -1.5
-    r = 1.5
+    ratio = window.display.width / window.display.height
+    l = -ratio
+    r = ratio
     t = 1
     b = -1
 
-    @_pMat = new Mat 4, 4    # projection
-    @_rMat = new Mat 4, 4    # rotation
-    @_lMat = new Mat 4, 4    # location
-    @_pvMat = new Mat 4, 4   # projection * view
+    @_pMat = new Mat(4, 4).toId()    # projection
+    @_rMat = new Mat(4, 4).toId()    # rotation
+    @_lMat = new Mat(4, 4).toId()    # location
+    @_vpMat = new Mat(4, 4).toId()   # projection * view
 
     @_pMat.data = [
       2.0 * n / (r - l), 0.0, 0.0, 0.0,
@@ -26,15 +26,12 @@ class window.Camera
       0.0, 0.0, -2.0 * n * f / (f - n), 0.0
     ]
 
-    @_rMat.toId()
-    @_lMat.toId()
-    @_pvMat.toId()
-
     @_speed = 0.1
     @_rotSpeed = 0.01 * Math.PI
 
-  addPVToProgram: (program) ->
-    program.addUniformGL "pv_matrix", @_pvMat
+  getVPMat: ->
+    @update()
+    return @_vpMat
 
   update: ->
     cc = Math.cos @_rotAngle
@@ -84,7 +81,8 @@ class window.Camera
     @_cameraDir.multMat(rm)
     @_cameraDir.normalize()
 
-    @_pvMat.setTo window.Mat.mult(window.Mat.mult(@_rMat, @_lMat), @_pMat)
+    @_vpMat.setTo window.Mat.mult(window.Mat.mult(@_rMat, @_lMat), @_pMat)
+    return
 
   doLogic: (delta) ->
 
@@ -94,7 +92,7 @@ class window.Camera
     if window.input.keyPressed 68 # d
       @_rotAngle += @_rotSpeed
 
-    if window.input.keyPressed 87 #w
+    if window.input.keyPressed 87 # w
       @_cameraPos.addVec window.Vec.multScalar(@_cameraDir, @_speed)
 
     if window.input.keyPressed 83 # s
@@ -121,3 +119,4 @@ class window.Camera
       @_rotAngle -= @_rotSpeed
     ###
     @update()
+    return

@@ -1,5 +1,10 @@
 (($) -> ) jQuery
 
+_id = 1
+window.get_uid = ->
+  _id++
+  return _id - 1
+
 window.GL = undefined
 window.display = undefined
 window.camera = undefined
@@ -37,11 +42,13 @@ class window.Display
     #GL.depthMask GL.TRUE
     GL.depthFunc GL.LEQUAL
     GL.depthRange 0.0, 1.0
+    return
 
   initGame: ->
     window.input = new Input canvas
     window.camera = new Camera
     @_scene = new Scene
+    return
 
   compTime: ->
     date = new Date()
@@ -51,16 +58,18 @@ class window.Display
     if @_printAccum >= @_printInterval
       console.log @_delta + "ms delta"
       @_printAccum = 0
+    return
 
   executeDrawGL: ->
     GL.clear (GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT)
     @_scene.delegateDrawGL()
+    return
 
   executeDoLogic: ->
     @compTime()
-
     window.camera.doLogic @_delta
     @_scene.delegateDoLogic @_delta
+    return
 
   # maybe more scenes later
   currentScene: ->
@@ -70,9 +79,11 @@ updateGL = ->
   window.display.executeDoLogic()
   window.display.executeDrawGL()
   window.requestAnimationFrame updateGL
+  return
 
 $ ->
   window.display = new Display
   window.display.initGL $("#canvas")
   window.display.initGame()
   updateGL()
+  return

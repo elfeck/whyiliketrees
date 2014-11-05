@@ -5,14 +5,13 @@ precision mediump float;
 attribute vec4 vert_pos;
 attribute vec4 vert_col;
 
-uniform vec3 offset;
-
-uniform mat4 pv_matrix;
+uniform vec3 offs;
+uniform mat4 vp_matrix;
 
 varying vec4 frag_col;
 
 void main() {
-  gl_Position = pv_matrix * (vert_pos + vec4(offset.xyz, 0));
+  gl_Position = vp_matrix * (vert_pos + vec4(offs.xyz, 0));
   frag_col = vec4(vert_col);
 }
 "
@@ -61,10 +60,11 @@ class window.ShaderProgram
     if not GL.getProgramParameter @_program, GL.LINK_STATUS
       console.log "Error in link program \n" + GL.getProgramInfoLog @_program
 
-  bindGL: ->
+  bindGL: (id) ->
     GL.useProgram @_program
     for uni in @_uniforms
-      uni.uniform.asUniformGL uni.location
+      if id == uni.id || uni.id == 0
+        uni.uniform.asUniformGL uni.location
 
   unbindGL: ->
     GL.useProgram null
@@ -72,8 +72,9 @@ class window.ShaderProgram
   getAttribLocGL: (name) ->
     return GL.getAttribLocation @_program, name
 
-  addUniformGL: (name, uniform) ->
+  addUniformGL: (id, name, uniform) ->
     uni =
+      id: id
       uniform: uniform
       location: GL.getUniformLocation @_program, name
     @_uniforms.push uni

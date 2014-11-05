@@ -9,9 +9,11 @@ class window.Input
   handleKeyDown: (event) ->
     @_keys[event.keyCode] = true
     #console.log event.keyCode
+    return
 
   handleKeyUp: (event) ->
     @_keys[event.keyCode] = false
+    return
 
   keyPressed: (keyCode) ->
     return @_keys[keyCode]
