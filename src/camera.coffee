@@ -120,3 +120,16 @@ class window.Camera
     ###
     @update()
     return
+
+  posToString: ->
+    x = @_cameraPos.data[0] + ""
+    y = @_cameraPos.data[1] + ""
+    z = @_cameraPos.data[2] + ""
+    a = (@_rotAngle %% 2 * Math.PI) / Math.PI + ""
+
+    x = x.substring 0, 6
+    y = y.substring 0, 6
+    z = z.substring 0, 6
+    a = a.substring 0, 6
+
+    return "[" + x + ", " + y + ", " + z + " | " + a + " pi]"

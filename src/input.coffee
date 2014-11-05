@@ -13,7 +13,13 @@ class window.Input
 
   handleKeyUp: (event) ->
     @_keys[event.keyCode] = false
+    @handleSpecialKeys(event.keyCode)
     return
 
   keyPressed: (keyCode) ->
     return @_keys[keyCode]
+
+  handleSpecialKeys: (keyCode) ->
+    if keyCode == 80
+      window.toggleDebug()
+    return

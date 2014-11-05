@@ -1,14 +1,10 @@
 (($) -> ) jQuery
 
-_id = 1
-window.get_uid = ->
-  _id++
-  return _id - 1
-
 window.GL = undefined
-window.display = undefined
 window.camera = undefined
 window.input = undefined
+window.display = undefined
+window.debug = true
 
 class window.Display
 
@@ -19,8 +15,10 @@ class window.Display
 
     @_last = new Date().getTime()
     @_delta = 0
-    @_printInterval = 2000
-    @_printAccum = 2000
+    @_deltaItv = 2000
+    @_deltaAcm = 2000
+    @_cameraItv = 200
+    @_cameraAcm = 200
 
     @_scene = undefined
 
@@ -54,10 +52,14 @@ class window.Display
     date = new Date()
     @_delta = date.getTime() - @_last
     @_last = date.getTime()
-    @_printAccum += @_delta
-    if @_printAccum >= @_printInterval
-      console.log @_delta + "ms delta"
-      @_printAccum = 0
+    @_deltaAcm += @_delta
+    @_cameraAcm += @_delta
+    if @_deltaAcm >= @_deltaItv
+      window.setInfo 2, @_delta + "ms delta"
+      @_deltaAcm = 0
+    if @_cameraAcm >= @_cameraItv
+      window.setInfo 1, "camera " + window.camera.posToString()
+      @_cameraAcm = 0
     return
 
   executeDrawGL: ->

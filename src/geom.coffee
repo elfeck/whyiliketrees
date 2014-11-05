@@ -8,6 +8,7 @@ class window.Geom
     @_vb = undefined
     @_ib = undefined
 
+    # location: [size, offset]
     @_layout = []
 
   initGL: (program, attribNames) ->
