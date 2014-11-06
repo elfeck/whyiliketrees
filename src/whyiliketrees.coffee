@@ -15,10 +15,19 @@ class window.Display
 
     @_last = new Date().getTime()
     @_delta = 0
-    @_deltaItv = 2000
-    @_deltaAcm = 2000
+    @_deltaItv = 100
+    @_deltaAcm = 100
     @_cameraItv = 200
     @_cameraAcm = 200
+    @_dprintItv = 1000
+    @_dprintAcm = 1000
+
+    @_deltaAvgItv = 5000
+    @_deltaAvgAcm = 5000
+
+    @_ticks = 0
+    @_deltaSum = 0
+    @_deltaAvg = 0
 
     @_scene = undefined
 
@@ -54,13 +63,33 @@ class window.Display
     @_last = date.getTime()
     @_deltaAcm += @_delta
     @_cameraAcm += @_delta
+    @_deltaAvgAcm += @_delta
+    @_ticks++
+    @_deltaSum += @_delta
+
     if @_deltaAcm >= @_deltaItv
-      window.setInfo 2, @_delta + "ms delta"
+      window.setInfo 2, @_delta + "ms delta  [" +
+        (@_deltaAvg + "").substring(0, 4) + "ms]"
       @_deltaAcm = 0
+
+    if @_deltaAvgAcm >= @_deltaAvgItv
+      @_deltaAvg = @_deltaSum / @_ticks
+      window.setInfo 2, @_delta + "ms delta  [" +
+        (@_deltaAvg + "").substring(0, 4) + "ms]"
+      @_deltaAvgAcm = 0
+      @_ticks = 0
+      @_deltaSum = 0
+
     if @_cameraAcm >= @_cameraItv
       window.setInfo 1, "camera " + window.camera.posToString()
       @_cameraAcm = 0
     return
+
+  resetDprint: ->
+    if @_dprintAcm >= @_dprintItv
+      window._knownLines = []
+      @_dprintAcm = 0
+    @_dprintAcm += @_delta
 
   executeDrawGL: ->
     GL.clear (GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT)
@@ -69,6 +98,7 @@ class window.Display
 
   executeDoLogic: ->
     @compTime()
+    @resetDprint()
     window.camera.doLogic @_delta
     @_scene.delegateDoLogic @_delta
     return

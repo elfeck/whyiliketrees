@@ -59,15 +59,19 @@ class window.ShaderProgram
     GL.linkProgram @_program
     if not GL.getProgramParameter @_program, GL.LINK_STATUS
       console.log "Error in link program \n" + GL.getProgramInfoLog @_program
+    return
 
-  bindGL: (id) ->
+  bindGL: ->
     GL.useProgram @_program
-    for uni in @_uniforms
-      if id == uni.id || uni.id == 0
-        uni.uniform.asUniformGL uni.location
 
   unbindGL: ->
     GL.useProgram null
+    return
+
+  uploadUniformsGL: (id) ->
+    for uni in @_uniforms
+      if id == uni.id
+        uni.uniform.asUniformGL uni.location
 
   getAttribLocGL: (name) ->
     return GL.getAttribLocation @_program, name
@@ -78,3 +82,4 @@ class window.ShaderProgram
       uniform: uniform
       location: GL.getUniformLocation @_program, name
     @_uniforms.push uni
+    return
