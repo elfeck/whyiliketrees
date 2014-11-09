@@ -1,4 +1,4 @@
-class window.World
+class window.TestSpikes
 
   constructor: ->
     @_uid = window.get_uid()
@@ -29,7 +29,8 @@ class window.World
     for z in [0..total-1] by 1
       for x in [0..total-1] by 1
         @vecNet.push new Vec 4,
-          [x * size + offs, @yFunc(x + offs, z + offs) , z * size + offs, 1.0]
+          [(x + offs) * size, @yFunc(x + offs, z + offs, size) ,
+            (z + offs) * size, 1.0]
 
     prims = []
     vRaw = []
@@ -64,7 +65,6 @@ class window.World
     @_geom.addData dataSet
     return
 
-  yFunc: (x, z) ->
-    y = Math.min 50, (x * x + z * z) + Math.random() * 20
-    return y
+  yFunc: (x, z, size) ->
+    return Math.random() * size * 10
     #return 0

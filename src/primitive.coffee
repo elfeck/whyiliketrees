@@ -8,6 +8,17 @@ class window.GeomData
     return 0 if @prims.length is 0
     return @prims.length * @prims[0].vCount
 
+  checkMod: ->
+
+
+  fetchVertexData: (vRaw) ->
+    p.fetchVertexData vRaw for p in @prims
+    return
+
+  fetchIndexData: (iRaw, offs) ->
+    offs = p.fetchIndexData iRaw, offs for p in @prims
+    return offs
+
 class window.Primitive
 
   constructor: (@vCount) ->
@@ -28,6 +39,5 @@ class window.Vertex
     @data = []
 
   fetchVertexData: (vRaw) ->
-    for v in @data
-      vRaw.push val for val in v.data
+    v.fetchVertexData vRaw for v in @data
     return

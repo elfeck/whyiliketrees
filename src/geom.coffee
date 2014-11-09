@@ -40,8 +40,7 @@ class window.Geom
     GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, null
     return
 
-  updateGL: (id) ->
-    # for now just inefficient re-upload of the whole buffer
+  updateGL: () ->
     @uploadGL()
     return
 
@@ -52,18 +51,17 @@ class window.Geom
       ds.iOffs = iOffs
       iOffs += ds.getICount()
     @uploadGL()
+    return
 
   fetchVertexData: ->
     vRaw = []
-    for ds in @_datasets
-      p.fetchVertexData vRaw for p in ds.prims
+    ds.fetchVertexData vRaw for ds in @_datasets
     return vRaw
 
   fetchIndexData: ->
     iRaw = []
     offs = 0
-    for ds in @_datasets
-      offs = p.fetchIndexData iRaw, offs for p in ds.prims
+    offs = ds.fetchIndexData iRaw, offs for ds in @_datasets
     return iRaw
 
   bindGL: ->

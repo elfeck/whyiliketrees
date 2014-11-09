@@ -2,7 +2,8 @@ class window.Scene
 
   constructor: ->
     @_entities = [
-      new World
+      #new World
+      new TestSpikes
     ]
 
   delegateDrawGL: ->
