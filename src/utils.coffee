@@ -39,3 +39,17 @@ window.toggleDebug = ->
     $("#info1").hide()
     $("#info2").hide()
   return
+
+window.getShaderAttributes = (vertSrc) ->
+  lines = vertSrc.split(";")
+  lines = lines.filter (l) -> l.indexOf("attribute") > -1
+  for i in [0..lines.length-1]
+    lines[i] = lines[i].replace "attribute ", ""
+    lines[i] = lines[i].replace "float ", ""
+    lines[i] = lines[i].replace "vec2 ", ""
+    lines[i] = lines[i].replace "vec3 ", ""
+    lines[i] = lines[i].replace "vec4 ", ""
+    lines[i] = lines[i].replace ";", ""
+    lines[i] = lines[i].replace " ", ""
+    lines[i] = lines[i].replace "\n", ""
+  return lines

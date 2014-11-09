@@ -1,45 +1,32 @@
 class window.Geom
 
-  constructor: ->
+  constructor: (@_layout) ->
     @_datasets = []
-    @_totalIOffs = 0 # total offset into the indexbuffer
-    @_totalVOffs = 0 # total offset added to each index (to have 0-base)
 
-    @_stride = 0
     @_vb = undefined
     @_ib = undefined
-    @currentProgram = undefined
 
-    # location: [size, offset]
-    @_layout = []
+    @_stride = 0
+    @_stride += s for s in @_layout
 
-  initGL: (program, attribNames) ->
+  initGL: ->
     @_vb = GL.createBuffer()
     @_ib = GL.createBuffer()
-    @currentProgram = program
-
-    offset = 0
-    for own name, size of attribNames
-      index = program.getAttribLocGL(name)
-      @_layout[index] = [size, offset]
-      GL.enableVertexAttribArray index
-      offset += size
-      @_stride += size
+    GL.enableVertexAttribArray i for i in [0..@_layout.length-1]
     return
 
   drawGL: () ->
     @bindGL()
-    @currentProgram.bindGL()
-    @currentProgram.uploadUniformsGL 0
-
-    for toDraw in @_datasets
-      if toDraw?
-        @currentProgram.uploadUniformsGL toDraw.id
-        GL.drawElements(GL.TRIANGLES, toDraw.iRaw.length,
-          GL.UNSIGNED_SHORT, toDraw.iOffs * 2)
-
-    @currentProgram.unbindGL()
+    for d in @_datasets
+      continue if not d.visible
+      d.program.bindGL()
+      d.program.uploadUniformsGL 0
+      d.program.uploadUniformsGL d.id
+      GL.drawElements(GL.TRIANGLES, d.getICount(), GL.UNSIGNED_SHORT,
+        d.iOffs * 2)
+      d.program.unbindGL()
     @unbindGL()
+    return
 
   uploadGL: ->
     GL.bindBuffer GL.ARRAY_BUFFER, @_vb
@@ -58,67 +45,34 @@ class window.Geom
     @uploadGL()
     return
 
-  addDataSet: (id, vRaw, iRaw) ->
-    oiRaw = []
-    vCount = 0
-    for i in iRaw
-      oiRaw.push i + @_totalVOffs
-      vCount = Math.max(vCount, i)
-    vCount++
-    @_totalVOffs += vCount
-    dataset =
-      id: id
-      vRaw: vRaw
-      iRaw: oiRaw
-      iOffs: @_totalIOffs # offset into the actual index buffer
-      vCount: vCount      # count of vertices in this dataset
-
-    @_datasets.push dataset
-    @_totalIOffs += iRaw.length
-
+  addData: (geomData) ->
+    @_datasets.push geomData
+    iOffs = 0
+    for ds in @_datasets
+      ds.iOffs = iOffs
+      iOffs += ds.getICount()
     @uploadGL()
-    return
-
-  removeDataSet: (id) ->
-    toRemove = @getDataSet id
-    index = @_datasets.indexOf toRemove
-
-    for i in [index+1..@_datasets.length-1] by 1
-      for j in [0..@_datasets[i].iRaw.length-1] by 1
-        @_datasets[i].iRaw[j] -= toRemove.vCount
-      @_datasets[i].iOffs -= toRemove.iRaw.length
-
-    @_totalIOffs -= toRemove.iRaw.length
-    @_totalVOffs -= toRemove.vCount
-    @_datasets.splice index, 1
-
-    @uploadGL()
-    return
-
-  getDataSet: (id) ->
-    for d in @_datasets
-      if d.id == id
-        return d
-    return undefined
-
-  fetchIndexData: ->
-    allIData = []
-    for d in @_datasets
-      allIData = allIData.concat d.iRaw
-    return allIData
 
   fetchVertexData: ->
-    allVData = []
-    for d in @_datasets
-      allVData = allVData.concat d.vRaw
-    return allVData
+    vRaw = []
+    for ds in @_datasets
+      p.fetchVertexData vRaw for p in ds.prims
+    return vRaw
+
+  fetchIndexData: ->
+    iRaw = []
+    offs = 0
+    for ds in @_datasets
+      offs = p.fetchIndexData iRaw, offs for p in ds.prims
+    return iRaw
 
   bindGL: ->
     GL.bindBuffer GL.ARRAY_BUFFER, @_vb
     GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, @_ib
-
-    for own index, info of @_layout
-      @setAttribGL index, info[0], info[1]
+    offs = 0
+    for own index, size of @_layout
+      @setAttribGL index, size, offs
+      offs += size
     return
 
   unbindGL: ->
@@ -126,7 +80,6 @@ class window.Geom
     GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, null
     return
 
-  setAttribGL: (index, size, offset) ->
-    GL.vertexAttribPointer index, size, GL.FLOAT, false, @_stride * 4,
-      offset * 4
+  setAttribGL: (i, s, offs) ->
+    GL.vertexAttribPointer i, s, GL.FLOAT, false, @_stride * 4, offs * 4
     return

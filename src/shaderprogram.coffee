@@ -52,6 +52,11 @@ class window.ShaderProgram
         GL.getShaderInfoLog @_frag
 
     @_program = GL.createProgram()
+
+    attribNames = window.getShaderAttributes @_vertSrc
+    for i in [0..attribNames-1]
+      GL.bindAttribLocation @_program, i, attribNames[i]
+
     GL.attachShader @_program, @_vert
     GL.attachShader @_program, @_frag
     GL.linkProgram @_program
@@ -70,9 +75,6 @@ class window.ShaderProgram
     for uni in @_uniforms
       if id == uni.id
         uni.uniform.asUniformGL uni.location
-
-  getAttribLocGL: (name) ->
-    return GL.getAttribLocation @_program, name
 
   addUniformGL: (id, name, uniform) ->
     uni =

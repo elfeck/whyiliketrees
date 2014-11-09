@@ -6,11 +6,8 @@ class window.World
     @_program.initGL()
     @_program.addUniformGL 0, "vp_matrix", window.camera.getVPMat()
 
-    attribs =
-      "vert_pos": 4
-      "vert_col": 4
-    @_geom = new Geom
-    @_geom.initGL(@_program, attribs)
+    @_geom = new Geom [4, 4]
+    @_geom.initGL()
 
     @vecNet = []
     @generateWorld()
@@ -24,12 +21,12 @@ class window.World
     return
 
   generateWorld: ->
-    size = 8
+    size = 10
     total = 20
     for z in [0..total-1] by 1
       for x in [0..total-1] by 1
         @vecNet.push new Vec 4,
-          [x * size, Math.random() * size, z * size, 1.0]
+          [x * size, Math.random() * size * 10, z * size, 1.0]
 
     prims = []
     vRaw = []
@@ -59,43 +56,7 @@ class window.World
         prim2.vertices = v2
         prims.push prim1
         prims.push prim2
-        prim1.fetchVertexData vRaw
-        prim2.fetchVertexData vRaw
-        offs = prim1.fetchIndexData iRaw, offs
-        offs = prim2.fetchIndexData iRaw, offs
 
-    @_geom.addDataSet @_uid, vRaw, iRaw
-
-###y
-size = 20
-total = 10
-vertexNet = []
-for z in [0..total-1] by 1
-  for x in [0..total-1] by 1
-    vert = new Vertex z * total + x
-    vert.data.push new Vec(4, [x * size, 0.0, z * size, 1.0])
-    vert.data.push new Vec(4, [x / total, z / total, 0.5, 1.0])
-    vertexNet.push vert
-
-prims = []
-for z in [0..total-2]
-  for x in [0..total-2]
-    p1 = new Primitive 3
-    p1.vertices.push vertexNet[z * total + x]
-    p1.vertices.push vertexNet[z * total + x + 1]
-    p1.vertices.push vertexNet[(z + 1) * total + x + 1]
-
-    p2 = new Primitive 3
-    p2.vertices.push vertexNet[z * total + x]
-    p2.vertices.push vertexNet[(z + 1) * total + x + 1]
-    p2.vertices.push vertexNet[(z + 1) * total + x]
-
-    prims.push p1
-    prims.push p2
-vRaw = []
-iRaw = []
-v.fetchVertexData vRaw for v in vertexNet
-p.fetchIndexData iRaw, 0 for p in prims
-
-@_geom.addDataSet @_uid, vRaw, iRaw
-###
+    dataSet = new GeomData @_uid, @_program, prims, true
+    @_geom.addData dataSet
+    return

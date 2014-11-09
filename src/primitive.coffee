@@ -1,6 +1,16 @@
+class window.GeomData
+
+  constructor: (@id, @program = undefined, @prims = [], @visible = true) ->
+    @vOffs = 0
+    @iOffs = 0
+
+  getICount: ->
+    return 0 if @prims.length is 0
+    return @prims.length * @prims[0].vCount
+
 class window.Primitive
 
-  constructor: (@_vCount) ->
+  constructor: (@vCount) ->
     @vertices = []
 
   fetchVertexData: (vRaw) ->
@@ -8,8 +18,8 @@ class window.Primitive
     return
 
   fetchIndexData: (iRaw, offs) ->
-    iRaw.push(i + offs) for i in [0..@_vCount-1] by 1
-    return offs + @_vCount
+    iRaw.push(i + offs) for i in [0..@vCount-1] by 1
+    return offs + @vCount
 
 
 class window.Vertex
