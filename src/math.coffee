@@ -71,6 +71,30 @@ class window.Vec
     nv = new Vec v.dim, v.data().slice()
     return nv.multScalar s
 
+  @addVec: (v1, v2) ->
+    if not v1.dim is v2.dim
+      console.log "Invalid vector dims for addVec"
+      return undefined
+    v = new Vec v1.dim
+    v.data()[i] = v1.data()[i] + v2.data()[i] for i in [0..v1.dim-1]
+    return v
+
+  @subVec: (v1, v2) ->
+    return Vec.addVec v1, Vec.multScalar(v2, -1.0)
+
+  @surfaceNormal: (a, b, c) ->
+    if a.dim < 3 and b.dim < 3 and c.dim < 3
+      console.log "Invalid vector dims for surface normal"
+      return undefined
+    u = Vec.subVec a, b
+    v = Vec.subVec c, b
+    n = new Vec 3, [
+      u.data()[1] * v.data()[2] - u.data()[2] * v.data()[1],
+      u.data()[2] * v.data()[0] - u.data()[0] * v.data()[2],
+      u.data()[0] * v.data()[1] - u.data()[1] * v.data()[0]
+    ]
+    return n
+
 class window.Mat
 
   constructor: (@dimX, @dimY, @_data = []) ->

@@ -1,29 +1,36 @@
-window.quadVert = "
+window.worldVert = "
 #version 100\n
 precision mediump float;
 
 attribute vec4 vert_pos;
-attribute vec4 vert_col;
+attribute vec3 vert_col;
+attribute vec3 vert_norm;
 
 uniform vec3 offs;
 uniform mat4 vp_matrix;
 
-varying vec4 frag_col;
+uniform vec3 light_dir;
+uniform vec3 light_int;
+uniform vec3 light_amb;
+
+varying vec3 frag_col;
 
 void main() {
   gl_Position = vp_matrix * (vert_pos + vec4(offs.xyz, 0));
-  frag_col = vec4(vert_col);
+  float cAng = dot(vert_norm, normalize(light_dir));
+  cAng = clamp(cAng, 0.0, 1.0);
+  frag_col = light_int * vert_col * cAng + light_amb * vert_col;
 }
 "
 
-window.quadFrag = "
+window.worldFrag = "
 #version 100\n
 precision mediump float;
 
-varying vec4 frag_col;
+varying vec3 frag_col;
 
 void main() {
-  gl_FragColor = frag_col;
+  gl_FragColor = vec4(frag_col.xyz, 1.0);
 }
 "
 

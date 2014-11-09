@@ -33,6 +33,10 @@ class window.Camera
     @update()
     return @_vpMat
 
+  addToProgram: (program, id = 0) ->
+    program.addUniformGL id, "vp_matrix", @getVPMat()
+    return
+
   update: ->
     cc = Math.cos @_rotAngle
     ss = Math.sin @_rotAngle
