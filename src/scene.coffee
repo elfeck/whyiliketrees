@@ -10,5 +10,5 @@ class window.Scene
     return
 
   delegateDoLogic: (delta) ->
-    e.doLogic(delta) for e in @_entities
+    e.doLogic delta for e in @_entities
     return

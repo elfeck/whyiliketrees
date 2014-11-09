@@ -7,7 +7,7 @@ class window.Camera
     @_rotAngle = 0.0
 
     n = 1.0
-    f = 100.0
+    f = 1000.0
     ratio = window.display.width / window.display.height
     l = -ratio
     r = ratio

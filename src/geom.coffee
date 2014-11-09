@@ -93,6 +93,7 @@ class window.Geom
     @_datasets.splice index, 1
 
     @uploadGL()
+    return
 
   getDataSet: (id) ->
     for d in @_datasets

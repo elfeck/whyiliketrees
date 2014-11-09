@@ -1,4 +1,4 @@
-simpleVert = "
+window.quadVert = "
 #version 100\n
 precision mediump float;
 
@@ -16,7 +16,7 @@ void main() {
 }
 "
 
-simpleFrag = "
+window.quadFrag = "
 #version 100\n
 precision mediump float;
 
@@ -29,9 +29,7 @@ void main() {
 
 class window.ShaderProgram
 
-  constructor: (@_vertSrc = simpleVert, @_fragSrc = simpleFrag) ->
-    @_vertSrc = simpleVert
-    @_fragSrc = simpleFrag
+  constructor: (@_vertSrc, @_fragSrc) ->
     @_vert = undefined
     @_frag = undefined
     @_program = undefined
