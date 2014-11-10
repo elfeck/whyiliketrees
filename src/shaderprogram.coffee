@@ -9,17 +9,20 @@ attribute vec3 vert_norm;
 uniform vec3 offs;
 uniform mat4 vp_matrix;
 
-uniform vec3 light_dir;
+uniform vec3 light_pos;
 uniform vec3 light_int;
 uniform vec3 light_amb;
 
+varying vec3 frag_pos;
 varying vec3 frag_col;
+varying vec3 frag_norm;
 
 void main() {
   gl_Position = vp_matrix * (vert_pos + vec4(offs.xyz, 0));
-  float cAng = dot(vert_norm, normalize(light_dir));
-  cAng = clamp(cAng, 0.0, 1.0);
-  frag_col = light_int * vert_col * cAng + light_amb * vert_col;
+
+  frag_pos = vert_pos.xyz;
+  frag_col = vert_col;
+  frag_norm = vert_norm;
 }
 "
 
@@ -27,10 +30,21 @@ window.worldFrag = "
 #version 100\n
 precision mediump float;
 
+uniform vec3 light_pos;
+uniform vec3 light_int;
+uniform vec3 light_amb;
+
+varying vec3 frag_pos;
 varying vec3 frag_col;
+varying vec3 frag_norm;
 
 void main() {
-  gl_FragColor = vec4(frag_col.xyz, 1.0);
+  vec3 light_dir = normalize(light_pos - frag_pos);
+  float cosAngI = dot(normalize(frag_norm), light_dir);
+  cosAngI = clamp(cosAngI, 0.0, 1.0);
+
+  gl_FragColor = vec4(frag_col * light_int * cosAngI + frag_col * light_amb,
+    1.0);
 }
 "
 

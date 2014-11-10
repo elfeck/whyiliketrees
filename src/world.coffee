@@ -2,7 +2,7 @@ class window.World
 
   constructor: ->
     @_uid = window.get_uid()
-    @globalLight = new DirLight new Vec(3, [0.0, 1.0, 0.0])
+    @globalLight = new PointLight new Vec(3, [0.0, 40.0, 0.0])
 
     @_program = new ShaderProgram window.worldVert, window.worldFrag
     @_program.initGL()
@@ -20,7 +20,10 @@ class window.World
     @_geom.drawGL(@_uid)
     return
 
+  total = 0
   doLogic: (delta) ->
+    #@globalLight.lightPos.data()[0] += Math.cos(total* 0.001) * 5
+    total += delta
     return
 
   generateWorld: ->
