@@ -12,12 +12,14 @@ class window.DirLight
 
 class window.PointLight
 
-  constructor: (@lightPos, @lightInt = new Vec(3, [0.7, 0.7, 0.7]),
+  constructor: (@lightPos, @lightAtt, @number = 0,
+    @lightInt = new Vec(3, [0.7, 0.7, 0.7]),
     @lightAmb = new Vec(3, [0.3, 0.3, 0.3])) ->
 
 
   addToProgram: (program, id = 0) ->
-    program.addUniformGL id, "light_pos", @lightPos
-    program.addUniformGL id, "light_int", @lightInt
-    program.addUniformGL id, "light_amb", @lightAmb
+    program.addUniformGL id, "lights[" + @number + "].light_att", @lightAtt
+    program.addUniformGL id, "lights[" + @number + "].light_pos", @lightPos
+    program.addUniformGL id, "lights[" + @number + "].light_int", @lightInt
+    program.addUniformGL id, "lights[" + @number + "].light_amb", @lightAmb
     return

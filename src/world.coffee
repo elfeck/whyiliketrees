@@ -2,11 +2,14 @@ class window.World
 
   constructor: ->
     @_uid = window.get_uid()
-    @globalLight = new PointLight new Vec(3, [0.0, 40.0, 0.0])
+    @globalLights = [
+      new PointLight(new Vec(3, [0.0, 40.0, 0.0]), new Vec(1, [80]), 0),
+      #new PointLight(new Vec(3, [-50.0, 80.0, 0.0]), new Vec(1, [100.0]), 1)
+    ]
 
     @_program = new ShaderProgram window.worldVert, window.worldFrag
     @_program.initGL()
-    @globalLight.addToProgram @_program
+    gl.addToProgram @_program for gl in @globalLights
     window.camera.addToProgram @_program
 
     @_geom = new Geom [4, 3, 3]
@@ -84,3 +87,4 @@ class window.World
   yFunc: (x, z) ->
     y = Math.min 50, (x * x + z * z)
     return y + Math.random() * 10
+    #return 0.0

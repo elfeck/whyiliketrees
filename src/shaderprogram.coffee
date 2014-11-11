@@ -9,10 +9,6 @@ attribute vec3 vert_norm;
 uniform vec3 offs;
 uniform mat4 vp_matrix;
 
-uniform vec3 light_pos;
-uniform vec3 light_int;
-uniform vec3 light_amb;
-
 varying vec3 frag_pos;
 varying vec3 frag_col;
 varying vec3 frag_norm;
@@ -30,21 +26,49 @@ window.worldFrag = "
 #version 100\n
 precision mediump float;
 
-uniform vec3 light_pos;
-uniform vec3 light_int;
-uniform vec3 light_amb;
+const int max_lights = 8;
+
+struct Light {
+ float light_att;
+ vec3 light_pos;
+ vec3 light_int;
+ vec3 light_amb;
+};
+
+uniform Light lights[max_lights];
 
 varying vec3 frag_pos;
 varying vec3 frag_col;
 varying vec3 frag_norm;
 
-void main() {
-  vec3 light_dir = normalize(light_pos - frag_pos);
-  float cosAngI = dot(normalize(frag_norm), light_dir);
-  cosAngI = clamp(cosAngI, 0.0, 1.0);
+vec3 compLight();
 
-  gl_FragColor = vec4(frag_col * light_int * cosAngI + frag_col * light_amb,
-    1.0);
+void main() {
+  gl_FragColor = vec4(compLight(), 1.0);
+}
+
+vec3 compLight() {
+  vec3 total_light = vec3(0.0);
+  vec3 light_dir = vec3(0.0);
+  float dist = 0.0;
+  float att_factor = 0.0;
+  float cos_ang = 0.0;
+
+  for(int i = 0; i < max_lights; ++i) {
+    if(lights[i].light_att == 0.0) break;
+    light_dir = (lights[i].light_pos - frag_pos);
+    dist = length(light_dir);
+    att_factor = max(0.0, 1.0 - dist / lights[i].light_att);
+
+    light_dir = normalize(light_dir);
+    cos_ang = dot(normalize(frag_norm), light_dir);
+    cos_ang = clamp(cos_ang, 0.0, 1.0);
+
+    total_light += cos_ang * att_factor * lights[i].light_int *
+      frag_col;
+  }
+
+  return total_light + frag_col * lights[0].light_amb;
 }
 "
 
