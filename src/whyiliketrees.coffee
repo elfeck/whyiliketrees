@@ -4,7 +4,9 @@ window.GL = undefined
 window.camera = undefined
 window.input = undefined
 window.display = undefined
+
 window.debug = true
+window.wireFrame = false
 
 class window.Display
 

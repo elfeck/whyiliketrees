@@ -30,14 +30,17 @@ window.setInfo = (i, msg) ->
 
 window.toggleDebug = ->
   window.debug = not window.debug
+  window.wireFrame = false
   if window.debug
-    $("#console").show()
-    $("#info1").show()
-    $("#info2").show()
+    #$("#console").show()
+    $("#info1").css("color", "#666666")
+    $("#info2").css("color", "#666666")
+    $("#info3").css("color", "#666666")
   else
     $("#console").hide()
-    $("#info1").hide()
-    $("#info2").hide()
+    $("#info1").css("color", "transparent")
+    $("#info2").css("color", "transparent")
+    $("#info3").css("color", "transparent")
   return
 
 window.getShaderAttributes = (vertSrc) ->

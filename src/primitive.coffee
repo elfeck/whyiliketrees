@@ -1,6 +1,7 @@
 class window.GeomData
 
-  constructor: (@id, @program = undefined, @prims = [], @visible = true) ->
+  constructor: (@id, @program = undefined, @prims = [],
+    @mode = GL.TRIANGLES, @visible = true) ->
     @vOffs = 0
     @iOffs = 0
 

@@ -26,7 +26,7 @@ class window.Camera
       0.0, 0.0, -2.0 * n * f / (f - n), 0.0
     ])
 
-    @_speed = 1.0
+    @_speed = 0.1 * 10
     @_rotSpeed = 0.01 * Math.PI
 
   getVPMat: ->
@@ -107,21 +107,6 @@ class window.Camera
     if window.input.keyPressed(16) and window.input.keyPressed(32)
       @_cameraPos.data()[1] += @_speed * 0.1 * delta
 
-    ###
-    if window.input.keyPressed 65
-      @_cameraPos.data()[0] += @_speed * delta
-    if window.input.keyPressed 68
-      @_cameraPos.data()[0] -= @_speed * delta
-    if window.input.keyPressed 83
-      @_cameraPos.data()[2] -= @_speed * delta
-    if window.input.keyPressed 87
-      @_cameraPos.data()[2] += @_speed * delta
-
-    if window.input.keyPressed 74
-      @_rotAngle += @_rotSpeed
-    if window.input.keyPressed 76
-      @_rotAngle -= @_rotSpeed
-    ###
     @update()
     return
 

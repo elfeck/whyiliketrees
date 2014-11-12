@@ -22,7 +22,7 @@ class window.Geom
       d.program.bindGL()
       d.program.uploadUniformsGL 0
       d.program.uploadUniformsGL d.id
-      GL.drawElements(GL.TRIANGLES, d.getICount(), GL.UNSIGNED_SHORT,
+      GL.drawElements(d.mode, d.getICount(), GL.UNSIGNED_SHORT,
         d.iOffs * 2)
       d.program.unbindGL()
     @unbindGL()

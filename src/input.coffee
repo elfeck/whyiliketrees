@@ -22,4 +22,6 @@ class window.Input
   handleSpecialKeys: (keyCode) ->
     if keyCode == 80
       window.toggleDebug()
+    if keyCode == 79
+      window.wireFrame = not window.wireFrame
     return

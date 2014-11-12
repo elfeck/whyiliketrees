@@ -51,9 +51,9 @@
      margin: auto;
      margin-bottom: 2px;
    }
-   div#controls {
+   div.controls {
      font-family: inherit;
-     font-size: 10px;
+     font-size: 11px;
      text-align: center;
      color: #666666
    }
@@ -68,9 +68,14 @@
       <div style="overflow: hidden; text-align: right;"
 	   class="inf" id="info2"></div>
       <canvas id="canvas"></canvas>
-      <textarea readonly id="console"></textarea>
-      <div id="controls">Controls: WASD, Space, Shift+Space<br>
-      Toggle Debug: P</div>
+      <textarea readonly id="console" style="display: none"></textarea>
+      <div class="controls" style="margin-top: 3px">
+	Controls: WASD, Space, Shift+Space<br>
+      </div>
+      <div class="controls" id="info3" style="font-size: 10px">
+	Toggle Debug: P<br>
+	Toggle Wireframe: O<br>
+      </div>
     </div>
   </body>
 </html>
