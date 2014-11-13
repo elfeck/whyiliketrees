@@ -7,6 +7,7 @@ window.display = undefined
 
 window.debug = true
 window.wireFrame = false
+window.mouseActive = true
 
 class window.Display
 
@@ -103,6 +104,7 @@ class window.Display
     @resetDprint()
     window.camera.doLogic @_delta
     @_scene.delegateDoLogic @_delta
+    window.input.reset()
     return
 
   # maybe more scenes later

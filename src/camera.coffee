@@ -3,8 +3,12 @@ class window.Camera
   constructor: ->
     @_cameraPos = new Vec 3, [0.0, 0.0, 0.0]
     @_cameraDir = new Vec 3, [1.0, 0.0, 1.0]
-    @_rotAxis = new Vec 3, [0.0, 1.0, 0.0]
-    @_rotAngle = 0.0
+
+    @_yRotDir = new Vec 3, [0.0, 1.0, 0.0]
+    @_xzRotDir = new Vec(3, [1.0, 0.0, 0.0])
+
+    @_yRotAngle = 0.0
+    @_xzRotAngle = 0.0
 
     n = 1.0
     f = 1000.0
@@ -38,17 +42,49 @@ class window.Camera
     return
 
   update: ->
-    cc = Math.cos @_rotAngle
-    ss = Math.sin @_rotAngle
+    @_lMat.data()[12] = @_cameraPos.data()[0]
+    @_lMat.data()[13] = @_cameraPos.data()[1]
+    @_lMat.data()[14] = @_cameraPos.data()[2]
+
+    # direction rotation
+    cc = Math.cos @_yRotAngle
+    ss = Math.sin @_yRotAngle
+    rm = new Mat 3, 3
+    rm.toId()
+    rm.data()[0] = cc
+    rm.data()[2] = -ss
+    rm.data()[6] = ss
+    rm.data()[8] = cc
+
+    @_cameraDir.setData([0.0, 0.0, 1.0])
+    @_cameraDir.multMat(rm)
+    @_cameraDir.normalize()
+
+    vp = new Mat(4, 4).toId()
+
+    @setRotMatrix @_yRotAngle, @_cameraPos, @_yRotDir
+    vp.multFromLeft @_rMat
+
+    @setRotMatrix @_xzRotAngle, @_cameraPos, @_xzRotDir
+    vp.multFromLeft @_rMat
+
+    vp.multFromLeft @_lMat
+    vp.multFromLeft @_pMat
+    @_vpMat.setTo vp
+    return
+
+  setRotMatrix: (angle, point, dir) ->
+    cc = Math.cos angle
+    ss = Math.sin angle
     ic = 1 - cc
 
-    u = @_rotAxis.data()[0]
-    v = @_rotAxis.data()[1]
-    w = @_rotAxis.data()[2]
+    u = dir.data()[0]
+    v = dir.data()[1]
+    w = dir.data()[2]
 
-    a = -@_cameraPos.data()[0]
-    b = -@_cameraPos.data()[1]
-    c = -@_cameraPos.data()[2]
+    a = -point.data()[0]
+    b = -point.data()[1]
+    c = -point.data()[2]
 
     @_rMat.data()[0] = u * u + (v * v + w * w) * cc
     @_rMat.data()[1] = u * v * ic + w * ss
@@ -69,32 +105,13 @@ class window.Camera
     @_rMat.data()[14] = (c * (u * u + v * v) - w * (a * u + b * v)) * ic +
       (a * v - b * u) * ss
 
-    @_lMat.data()[12] = @_cameraPos.data()[0]
-    @_lMat.data()[13] = @_cameraPos.data()[1]
-    @_lMat.data()[14] = @_cameraPos.data()[2]
-
-    # direction rotation
-    rm = new Mat 3, 3
-    rm.toId()
-    rm.data()[0] = cc
-    rm.data()[2] = -ss
-    rm.data()[6] = ss
-    rm.data()[8] = cc
-
-    @_cameraDir.setData([0.0, 0.0, 1.0])
-    @_cameraDir.multMat(rm)
-    @_cameraDir.normalize()
-
-    @_vpMat.setTo window.Mat.mult(window.Mat.mult(@_rMat, @_lMat), @_pMat)
-    return
-
   doLogic: (delta) ->
 
     if window.input.keyPressed 65 # a
-      @_rotAngle -= @_rotSpeed
+      @_yRotAngle -= @_rotSpeed
 
     if window.input.keyPressed 68 # d
-      @_rotAngle += @_rotSpeed
+      @_yRotAngle += @_rotSpeed
 
     if window.input.keyPressed 87 # w
       @_cameraPos.addVec window.Vec.multScalar(@_cameraDir, @_speed)
@@ -107,6 +124,23 @@ class window.Camera
     if window.input.keyPressed(16) and window.input.keyPressed(32)
       @_cameraPos.data()[1] += @_speed * 0.1 * delta
 
+    if not window.mouseActive
+      if window.input.keyPressed 38 #up
+        @_xzRotAngle =@_xzRotAngle + @_rotSpeed
+
+      if window.input.keyPressed 40 #down
+        @_xzRotAngle = @_xzRotAngle - @_rotSpeed
+
+      @_xzRotAngle = Math.max -Math.PI * 0.25, @_xzRotAngle
+      @_xzRotAngle = Math.min Math.PI * 0.25, @_xzRotAngle
+
+    else
+      if window.input.mouseY >= 0 and window.input.mouseY <=
+      window.display.height
+        angle = 2 * (window.input.mouseY - window.display.height * 0.5) /
+          window.display.height
+        @_xzRotAngle = angle * Math.PI * 0.25
+
     @update()
     return
 
@@ -114,7 +148,7 @@ class window.Camera
     x = @_cameraPos.data()[0] + ""
     y = @_cameraPos.data()[1] + ""
     z = @_cameraPos.data()[2] + ""
-    a = (@_rotAngle %% 2 * Math.PI) / Math.PI + ""
+    a = (@_yRotAngle %% 2 * Math.PI) / Math.PI + ""
 
     x = x.substring 0, 6
     y = y.substring 0, 6

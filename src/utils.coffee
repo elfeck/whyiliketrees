@@ -32,7 +32,7 @@ window.toggleDebug = ->
   window.debug = not window.debug
   window.wireFrame = false
   if window.debug
-    #$("#console").show()
+    $("#console").show()
     $("#info1").css("color", "#666666")
     $("#info2").css("color", "#666666")
     $("#info3").css("color", "#666666")

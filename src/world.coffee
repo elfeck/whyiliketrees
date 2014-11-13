@@ -3,11 +3,36 @@ class window.World
   constructor: ->
     @_uid = window.get_uid()
     @globalLights = [
-      new PointLight(new Vec(3, [0.0, 30.0, 0.0]), new Vec(1, [80]), 0,
+      new PointLight(
+        new Vec(3, [0.0, 30.0, 0.0]),
+        new Vec(1, [80]),
+        0,
         new Vec(3, [0.85, 0.85, 0.85])),
-      new PointLight(new Vec(3, [0.0, 250.0, 0.0]), new Vec(1, [300]), 1,
-        new Vec(3, [0.5, 0.5, 0.5]),
-        new Vec(3, [0.0, 0.0, 0.0]))
+      new PointLight(
+        new Vec(3, [-100, 80, 0]),
+        new Vec(1, [150]),
+        1,
+        new Vec(3, [0.65, 0.65, 0.65])),
+      new PointLight(
+        new Vec(3, [100, 80, 0]),
+        new Vec(1, [150]),
+        2,
+        new Vec(3, [0.65, 0.65, 0.65])),
+      new PointLight(
+        new Vec(3, [0, 80, -100]),
+        new Vec(1, [150]),
+        3,
+        new Vec(3, [0.65, 0.65, 0.65])),
+      new PointLight(
+        new Vec(3, [0.0, 80, 100]),
+        new Vec(1, [150]),
+        4,
+        new Vec(3, [0.65, 0.65, 0.65])),
+      new PointLight(
+        new Vec(3, [0.0, 250.0, 0.0]),
+        new Vec(1, [300]),
+        5,
+        new Vec(3, [0.5, 0.5, 0.5]))
     ]
     @lightAttenu = new window.AttenuationLight new Vec(3, [0.15, 0.15, 0.15])
 
@@ -47,7 +72,7 @@ class window.World
     for z in [0..total-1] by 1
       for x in [0..total-1] by 1
         @vecNets[0].push new Vec 4, [(x + offs) * size,
-          @yFunc1(x + offs, z + offs), (z + offs) * size, 1.0]
+          @yFunc(x + offs, z + offs), (z + offs) * size, 1.0]
 
     for i in [0..@vecNets.length-1]
       @dataSets.push @vecNetToMesh(@vecNets[i], i + 1)
@@ -96,14 +121,10 @@ class window.World
     dataSet = new GeomData id, @_program, prims, GL.TRIANGLES, true
     return dataSet
 
-  yFunc1: (x, z) ->
+  yFunc: (x, z) ->
     y = Math.min 50, (x * x + z * z)
     return y + Math.random() * 5
     #return 0.0
-
-  yFunc2: (x, z) ->
-    y = 200
-    return y
 
   handleDebug: ->
     if window.debug and window.wireFrame

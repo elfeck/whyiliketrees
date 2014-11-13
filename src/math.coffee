@@ -114,6 +114,38 @@ class window.Mat
       @_data[i * @dimX + i] = 1.0 for i in [0..@dimY - 1] by 1
     return this
 
+  multFromLeft: (b) ->
+    a = this
+    if a.dimX is not b.dimY
+      console.log "Cannot mult 2 Mat with mismatched dims in math.coffee"
+
+    c = new Mat b.dimX, a.dimY
+
+    for ar in [0..a.dimY-1] by 1
+      for bc in [0..b.dimX-1] by 1
+        for ac in [0..a.dimX-1] by 1
+          c.data()[c.dimX * ar + bc] += a.data()[a.dimX * ar + ac] *
+            b.data()[b.dimX * ac + bc]
+
+    @setData c.data()
+    return this
+
+  multFromRight: (a) ->
+    b = this
+    if a.dimX is not b.dimY
+      console.log "Cannot mult 2 Mat with mismatched dims in math.coffee"
+
+    c = new Mat b.dimX, a.dimY
+
+    for ar in [0..a.dimY-1] by 1
+      for bc in [0..b.dimX-1] by 1
+        for ac in [0..a.dimX-1] by 1
+          c.data()[c.dimX * ar + bc] += a.data()[a.dimX * ar + ac] *
+            b.data()[b.dimX * ac + bc]
+
+    @setData c.data()
+    return this
+
   setTo: (m) ->
     @_mod = true
     @dimX = m.dimX
