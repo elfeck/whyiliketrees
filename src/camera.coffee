@@ -119,9 +119,9 @@ class window.Camera
     if window.input.keyPressed 83 # s
       @_cameraPos.addVec window.Vec.multScalar(@_cameraDir, @_speed * -1.0)
 
-    if not window.input.keyPressed(16) and window.input.keyPressed(32)
+    if window.input.keyPressed(32)
       @_cameraPos.data()[1] -= @_speed * 0.1 * delta
-    if window.input.keyPressed(16) and window.input.keyPressed(32)
+    if window.input.keyPressed(16)
       @_cameraPos.data()[1] += @_speed * 0.1 * delta
 
     if not window.mouseActive

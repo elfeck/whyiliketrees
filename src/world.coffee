@@ -34,7 +34,7 @@ class window.World
         5,
         new Vec(3, [0.5, 0.5, 0.5]))
     ]
-    @lightAttenu = new window.AttenuationLight new Vec(3, [0.15, 0.15, 0.15])
+    #@lightAttenu = new window.AttenuationLight new Vec(3, [0.15, 0.15, 0.15])
 
     @_program = new ShaderProgram window.worldVert, window.worldFrag
     @_debugProgram = new ShaderProgram window.wireVert, window.wireFrag
@@ -42,7 +42,7 @@ class window.World
     @_debugProgram.initGL()
 
     gl.addToProgram @_program, 0 for gl in @globalLights
-    @lightAttenu.addToProgram @_program
+    #@lightAttenu.addToProgram @_program
 
     window.camera.addToProgram @_program
     window.camera.addToProgram @_debugProgram
@@ -66,7 +66,7 @@ class window.World
 
   generateWorld: ->
     size = 10
-    total = 30
+    total = 50
     offs = -0.5 * total
     @vecNets.push []
     for z in [0..total-1] by 1
