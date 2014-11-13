@@ -2,6 +2,9 @@ class window.World
 
   constructor: ->
     @_uid = window.get_uid()
+    light_dist = -100
+    light_height = 150
+    light_int = 180
     @globalLights = [
       new PointLight(
         new Vec(3, [0.0, 30.0, 0.0]),
@@ -9,23 +12,23 @@ class window.World
         0,
         new Vec(3, [0.85, 0.85, 0.85])),
       new PointLight(
-        new Vec(3, [-100, 80, 0]),
-        new Vec(1, [150]),
+        new Vec(3, [-light_dist, light_height, 0]),
+        new Vec(1, [light_int]),
         1,
         new Vec(3, [0.65, 0.65, 0.65])),
       new PointLight(
-        new Vec(3, [100, 80, 0]),
-        new Vec(1, [150]),
+        new Vec(3, [light_dist, light_height, 0]),
+        new Vec(1, [light_int]),
         2,
         new Vec(3, [0.65, 0.65, 0.65])),
       new PointLight(
-        new Vec(3, [0, 80, -100]),
-        new Vec(1, [150]),
+        new Vec(3, [0, light_height, -light_dist]),
+        new Vec(1, [light_int]),
         3,
         new Vec(3, [0.65, 0.65, 0.65])),
       new PointLight(
-        new Vec(3, [0.0, 80, 100]),
-        new Vec(1, [150]),
+        new Vec(3, [0.0, light_height, light_dist]),
+        new Vec(1, [light_int]),
         4,
         new Vec(3, [0.65, 0.65, 0.65])),
       new PointLight(

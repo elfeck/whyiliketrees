@@ -149,10 +149,12 @@ class window.Camera
     y = @_cameraPos.data()[1] + ""
     z = @_cameraPos.data()[2] + ""
     a = (@_yRotAngle %% 2 * Math.PI) / Math.PI + ""
+    b = (@_xzRotAngle %% 2 * Math.PI) / Math.PI + ""
 
     x = x.substring 0, 6
     y = y.substring 0, 6
     z = z.substring 0, 6
-    a = a.substring 0, 6
+    a = a.substring 0, 3
+    b = b.substring 0, 3
 
-    return "[" + x + ", " + y + ", " + z + " | " + a + " pi]"
+    return "[" + x + ", " + y + ", " + z + " | " + a + " pi, " + b + "pi]"
