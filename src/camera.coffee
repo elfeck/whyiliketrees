@@ -132,10 +132,10 @@ class window.Camera
 
     if not window.mouseActive
       if window.input.keyPressed 38 #up
-        @_xRotAngle += @_rotSpeed * delta
+        @_xRotAngle -= @_rotSpeed * delta
 
       if window.input.keyPressed 40 #down
-        @_xRotAngle -= @_rotSpeed * delta
+        @_xRotAngle += @_rotSpeed * delta
 
       if window.input.keyPressed 37 #left
         @_yRotAngle -= @_rotSpeed * delta
