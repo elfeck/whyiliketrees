@@ -7,7 +7,7 @@ window.display = undefined
 
 window.debug = true
 window.wireFrame = false
-window.mouseActive = true
+window.mouseActive = false
 
 class window.Display
 

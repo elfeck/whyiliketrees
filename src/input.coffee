@@ -6,13 +6,16 @@ class window.Input
 
     @mouseX = undefined
     @mouseY = undefined
+    @mouseDown = false
 
     @mouseDx = 0
     @mouseDy = 0
 
     $(window).on "keydown", (event) => @handleKeyDown event
     $(window).on "keyup", (event) => @handleKeyUp event
-    $(window).on "mousemove", (event) => @handleMouse event
+    $(window).on "mousemove", (event) => @handleMouseMove event
+    $(window).on "mousedown", (event) => @handleMouseDown event
+    $(window).on "mouseup", (event) => @handleMouseUp event
 
   handleKeyDown: (event) ->
     @_keys[event.keyCode] = true
@@ -24,7 +27,7 @@ class window.Input
     @handleSpecialKeys(event.keyCode)
     return
 
-  handleMouse: (event) ->
+  handleMouseMove: (event) ->
     x = event.pageX - @_canvas.offset().left
     y = event.pageY - @_canvas.offset().top
     if @mouseX? and @mouseY?
@@ -32,6 +35,12 @@ class window.Input
       @mouseDy = (@mouseY - y)
     @mouseX = x
     @mouseY = y
+
+  handleMouseDown: (event) ->
+    @mouseDown = true
+
+  handleMouseUp: (event) ->
+    @mouseDown = false
 
   handleSpecialKeys: (keyCode) ->
     if keyCode == 80 #P

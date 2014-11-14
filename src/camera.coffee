@@ -4,11 +4,13 @@ class window.Camera
     @_cameraPos = new Vec 3, [0.0, 0.0, 0.0]
     @_cameraDir = new Vec 3, [1.0, 0.0, 1.0]
 
+    @_viewRotDir = new Vec 3, [0.0, 1.0, 0.0]
+    @_xRotDir = new Vec 3, [1.0, 0.0, 0.0]
     @_yRotDir = new Vec 3, [0.0, 1.0, 0.0]
-    @_xzRotDir = new Vec(3, [1.0, 0.0, 0.0])
 
+    @_viewRotAngle = 0.0
+    @_xRotAngle = 0.0
     @_yRotAngle = 0.0
-    @_xzRotAngle = 0.0
 
     n = 1.0
     f = 1000.0
@@ -30,8 +32,8 @@ class window.Camera
       0.0, 0.0, -2.0 * n * f / (f - n), 0.0
     ])
 
-    @_speed = 0.1 * 10
-    @_rotSpeed = 0.01 * Math.PI
+    @_speed = 0.1
+    @_rotSpeed = 0.0005 * Math.PI
 
   getVPMat: ->
     @update()
@@ -47,8 +49,8 @@ class window.Camera
     @_lMat.data()[14] = @_cameraPos.data()[2]
 
     # direction rotation
-    cc = Math.cos @_yRotAngle
-    ss = Math.sin @_yRotAngle
+    cc = Math.cos @_viewRotAngle
+    ss = Math.sin @_viewRotAngle
     rm = new Mat 3, 3
     rm.toId()
     rm.data()[0] = cc
@@ -62,10 +64,13 @@ class window.Camera
 
     vp = new Mat(4, 4).toId()
 
+    @setRotMatrix @_viewRotAngle, @_cameraPos, @_viewRotDir
+    vp.multFromLeft @_rMat
+
     @setRotMatrix @_yRotAngle, @_cameraPos, @_yRotDir
     vp.multFromLeft @_rMat
 
-    @setRotMatrix @_xzRotAngle, @_cameraPos, @_xzRotDir
+    @setRotMatrix @_xRotAngle, @_cameraPos, @_xRotDir
     vp.multFromLeft @_rMat
 
     vp.multFromLeft @_lMat
@@ -108,38 +113,58 @@ class window.Camera
   doLogic: (delta) ->
 
     if window.input.keyPressed 65 # a
-      @_yRotAngle -= @_rotSpeed
+      @_viewRotAngle -= @_rotSpeed * delta
 
     if window.input.keyPressed 68 # d
-      @_yRotAngle += @_rotSpeed
+      @_viewRotAngle += @_rotSpeed * delta
 
     if window.input.keyPressed 87 # w
-      @_cameraPos.addVec window.Vec.multScalar(@_cameraDir, @_speed)
+      @_cameraPos.addVec window.Vec.multScalar(@_cameraDir, @_speed * delta)
 
     if window.input.keyPressed 83 # s
-      @_cameraPos.addVec window.Vec.multScalar(@_cameraDir, @_speed * -1.0)
+      @_cameraPos.addVec window.Vec.multScalar(@_cameraDir, @_speed * -1.0 *
+        delta)
 
-    if window.input.keyPressed(32)
-      @_cameraPos.data()[1] -= @_speed * 0.1 * delta
-    if window.input.keyPressed(16)
-      @_cameraPos.data()[1] += @_speed * 0.1 * delta
+    if window.input.keyPressed(32) and not window.input.keyPressed(16)
+      @_cameraPos.data()[1] -= @_speed * delta
+    if window.input.keyPressed(16) and window.input.keyPressed(32)
+      @_cameraPos.data()[1] += @_speed * delta
 
     if not window.mouseActive
       if window.input.keyPressed 38 #up
-        @_xzRotAngle =@_xzRotAngle + @_rotSpeed
+        @_xRotAngle += @_rotSpeed * delta
 
       if window.input.keyPressed 40 #down
-        @_xzRotAngle = @_xzRotAngle - @_rotSpeed
+        @_xRotAngle -= @_rotSpeed * delta
 
-      @_xzRotAngle = Math.max -Math.PI * 0.25, @_xzRotAngle
-      @_xzRotAngle = Math.min Math.PI * 0.25, @_xzRotAngle
+      if window.input.keyPressed 37 #left
+        @_yRotAngle -= @_rotSpeed * delta
+
+      if window.input.keyPressed 39 #right
+        @_yRotAngle += @_rotSpeed * delta
+
+      if not (window.input.keyPressed(37) or window.input.keyPressed(39))
+        @_yRotAngle += -@_yRotAngle * @_rotSpeed * 4 * delta #snapback y-Rot
 
     else
-      if window.input.mouseY >= 0 and window.input.mouseY <=
-      window.display.height
-        angle = 2 * (window.input.mouseY - window.display.height * 0.5) /
-          window.display.height
-        @_xzRotAngle = angle * Math.PI * 0.25
+      if window.input.mouseY >= 0 and
+      window.input.mouseY <= window.display.height and
+      window.input.mouseDown
+        @_xRotAngle -= window.input.mouseDy * 0.01
+
+      if window.input.mouseX >= 0 and
+      window.input.mouseX <= window.display.width and
+      window.input.mouseDown
+        @_yRotAngle += window.input.mouseDx * 0.01
+
+      if not window.input.mouseDown
+        @_yRotAngle += -@_yRotAngle * 0.1 #snapback for y-Rot
+
+    @_xRotAngle = Math.max -Math.PI * 0.25, @_xRotAngle
+    @_xRotAngle = Math.min Math.PI * 0.25, @_xRotAngle
+
+    @_yRotAngle = Math.max -Math.PI * 0.25, @_yRotAngle
+    @_yRotAngle = Math.min Math.PI * 0.25, @_yRotAngle
 
     @update()
     return
@@ -148,13 +173,16 @@ class window.Camera
     x = @_cameraPos.data()[0] + ""
     y = @_cameraPos.data()[1] + ""
     z = @_cameraPos.data()[2] + ""
-    a = (@_yRotAngle %% 2 * Math.PI) / Math.PI + ""
-    b = (@_xzRotAngle %% 2 * Math.PI) / Math.PI + ""
+    a = (@_viewRotAngle %% 2 * Math.PI) / Math.PI + ""
+    b = (@_xRotAngle %% 2 * Math.PI) / Math.PI + ""
+    c = (@_yRotAngle %% 2 * Math.PI) / Math.PI + ""
 
     x = x.substring 0, 6
     y = y.substring 0, 6
     z = z.substring 0, 6
     a = a.substring 0, 3
     b = b.substring 0, 3
+    c = c.substring 0, 3
 
-    return "[" + x + ", " + y + ", " + z + " | " + a + " pi, " + b + "pi]"
+    return "[" + x + ", " + y + ", " + z + " | " + a + " pi, " + b + "pi ," +
+      c + " pi]"
