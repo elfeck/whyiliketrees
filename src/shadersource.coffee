@@ -7,15 +7,16 @@ attribute vec3 vert_col;
 attribute vec3 vert_norm;
 
 uniform mat4 vp_matrix;
+uniform vec3 offs;
 
 varying vec3 frag_pos;
 varying vec3 frag_col;
 varying vec3 frag_norm;
 
 void main() {
-  gl_Position = vp_matrix * vert_pos;
+  gl_Position = vp_matrix * vec4(vert_pos.xyz + offs, 1.0);
 
-  frag_pos = vert_pos.xyz;
+  frag_pos = vert_pos.xyz + offs;
   frag_col = vert_col;
   frag_norm = vert_norm;
 }
@@ -79,14 +80,14 @@ attribute vec4 vert_pos;
 attribute vec3 vert_col;
 attribute vec3 vert_norm;
 
-uniform vec3 offs;
 uniform mat4 vp_matrix;
+uniform vec3 offs;
 
 varying vec3 frag_col;
 
 void main() {
+  gl_Position = vp_matrix * vec4(vert_pos.xyz + offs, 1.0);
   frag_col = vert_col;
-  gl_Position = vp_matrix * (vert_pos + vec4(offs.xyz, 0));
 }
 "
 

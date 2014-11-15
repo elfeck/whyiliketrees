@@ -17,7 +17,7 @@ class window.Vec
   addVec: (v) ->
     @_mod = true
     if v.dim != @dim
-      console.log "Mismatched dim in vector add"
+      window.dprint "Mismatched dim in vector add"
     for i in [0..@dim-1] by 1
       @_data[i] += v.data()[i]
     return this
@@ -31,7 +31,7 @@ class window.Vec
   multMat: (m) ->
     @_mod = true
     if m.dimX is not @dim
-      console.log "Mismatched dim in vector-mat mult"
+      window.dprint "Mismatched dim in vector-mat mult"
 
     newdata = []
     newdata.push 0.0 for i in [1..@dim] by 1
@@ -58,7 +58,7 @@ class window.Vec
       when 2 then GL.uniform2f loc, @_data[0], @_data[1]
       when 3 then GL.uniform3f loc, @_data[0], @_data[1], @_data[2]
       when 4 then GL.uniform4f loc, @_data[0], @_data[1], @_data[2], @_data[3]
-      else console.log "Invalid Uniform Attempt in math.coffee::Vec"
+      else window.dprint "Invalid Uniform Attempt in math.coffee::Vec"
     @_mod = false
     return
 
@@ -73,7 +73,7 @@ class window.Vec
 
   @addVec: (v1, v2) ->
     if not v1.dim is v2.dim
-      console.log "Invalid vector dims for addVec"
+      window.dprint "Invalid vector dims for addVec"
       return undefined
     v = new Vec v1.dim
     v.data()[i] = v1.data()[i] + v2.data()[i] for i in [0..v1.dim-1]
@@ -84,7 +84,7 @@ class window.Vec
 
   @surfaceNormal: (a, b, c) ->
     if a.dim < 3 and b.dim < 3 and c.dim < 3
-      console.log "Invalid vector dims for surface normal"
+      window.dprint "Invalid vector dims for surface normal"
       return undefined
     u = Vec.subVec a, b
     v = Vec.subVec c, b
@@ -109,7 +109,7 @@ class window.Mat
   toId: ->
     @_mod = true
     if(not @dimX == @dimY)
-      console.log "Cannot load id on unsym Mat in math.coffe::Mat"
+      window.dprint "Cannot load id on unsym Mat in math.coffe::Mat"
     else
       @_data[i * @dimX + i] = 1.0 for i in [0..@dimY - 1] by 1
     return this
@@ -117,7 +117,7 @@ class window.Mat
   multFromLeft: (b) ->
     a = this
     if a.dimX is not b.dimY
-      console.log "Cannot mult 2 Mat with mismatched dims in math.coffee"
+      window.dprint "Cannot mult 2 Mat with mismatched dims in math.coffee"
 
     c = new Mat b.dimX, a.dimY
 
@@ -133,7 +133,7 @@ class window.Mat
   multFromRight: (a) ->
     b = this
     if a.dimX is not b.dimY
-      console.log "Cannot mult 2 Mat with mismatched dims in math.coffee"
+      window.dprint "Cannot mult 2 Mat with mismatched dims in math.coffee"
 
     c = new Mat b.dimX, a.dimY
 
@@ -163,13 +163,13 @@ class window.Mat
       when 2 then GL.uniformMatrix2fv loc, false, new Float32Array @_data
       when 3 then GL.uniformMatrix3fv loc, false, new Float32Array @_data
       when 4 then GL.uniformMatrix4fv loc, false, new Float32Array @_data
-      else console.log "Invalid Uniform Attempt in math.coffe::Mat"
+      else window.dprint "Invalid Uniform Attempt in math.coffe::Mat"
     @_mod = false
     return
 
   @mult: (a, b) ->
     if a.dimX is not b.dimY
-      console.log "Cannot mult 2 Mat with mismatched dims in math.coffee"
+      window.dprint "Cannot mult 2 Mat with mismatched dims in math.coffee"
 
     c = new Mat b.dimX, a.dimY
 
