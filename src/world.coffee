@@ -6,6 +6,9 @@ class window.World
     @size = 10
     @total = 50
 
+    attenuLight = new AttenuationLight(new Vec 3, [0.0, 0.0, 0.0])
+    attenuLight.addToProgram(@_program, @_uid)
+
     @offs = new Vec 3, [0.0, 0.0, 0.0]
     @_program.addUniformGL @_uid, "offs", @offs
     @_debugProgram.addUniformGL @_uid, "offs", @offs
