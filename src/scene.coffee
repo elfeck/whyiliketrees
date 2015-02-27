@@ -1,28 +1,21 @@
 class window.Scene
 
   constructor: ->
-    @_program = new ShaderProgram window.worldVert, window.worldFrag
-    @_program.initGL()
+    @_lineGeom = new Geom [4, 3]
+    @_lineGeom.initGL()
 
-    @_debugProgram = new ShaderProgram window.wireVert, window.wireFrag
-    @_debugProgram.initGL()
+    @_lineShader = new ShaderProgram(window.colLineVert, window.colLineFrag)
+    @_lineShader.initGL()
+    @_lineShader.addUniformGL(@_uid, "offs", new Vec(3, [0.0, 0.0, 0.0]))
+    window.camera.addToProgram @_lineShader
 
-    @_gloLights = []
-    @initLights()
+    @constructLine()
+    @constructPlane()
 
-    window.camera.addToProgram @_program, 0
-    window.camera.addToProgram @_debugProgram, 0
-    gl.addToProgram @_program, 0 for gl in @_gloLights
-
-    @_geom = new Geom [4, 3, 3]
-    @_geom.initGL()
-
-    @_entities = [
-      new World @_program, @_debugProgram, @_geom
-      new MyTree @_program, @_debugProgram, @_geom
-    ]
+    @_entities = [ ]
 
   delegateDrawGL: ->
+    @_lineGeom.drawGL()
     e.drawGL() for e in @_entities
     return
 
@@ -30,11 +23,23 @@ class window.Scene
     e.doLogic delta for e in @_entities
     return
 
-  initLights: ->
-    @_gloLights = []
-    att = new Vec 1, [180]
-    int = new Vec 3, [0.85, 0.85, 0.85]
-    @_gloLights.push new PointLight( new Vec(3, [0, 100, 100.0]), att, 0, int)
-    @_gloLights.push new PointLight( new Vec(3, [0, 100, -100.0]), att, 1, int)
-    @_gloLights.push new PointLight( new Vec(3, [100, 100, 0]), att, 2, int)
-    @_gloLights.push new PointLight( new Vec(3, [-100, 100, 0]), att, 3, int)
+  constructLine: ->
+    line1 = new Line(
+      new Vec(3, [5.0, 0.0, 0.0]),
+      new Vec(3, [0.0, 1.0, 0.0]))
+
+    line2 = new Line(
+      new Vec(3, [-5.0, 0.0, 0.0]),
+      new Vec(3, [0.0, 1.0, 0.0]))
+
+    prim1 = [line1.toColoredLineSeg(0, 2), line1.toColoredLineSeg(3, 4)]
+    prim2 = [line2.toColoredLineSeg(0, 2), line2.toColoredLineSeg(3, 4)]
+
+    dataSet = new GeomData 1, @_lineShader, prim1.concat(prim2), GL.LINES
+    @_lineGeom.addData dataSet
+
+  constructPlane: ->
+    plane = new Plane(new Vec(3, [0, 1, 0]), new Vec(3, [0, 1, 0]))
+    prims = plane.toColoredLineSegs 10, 10
+    dataSet = new GeomData 2, @_lineShader, prims, GL.LINES
+    @_lineGeom.addData dataSet

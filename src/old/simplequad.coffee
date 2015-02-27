@@ -1,4 +1,4 @@
-class window.MyTree
+class window.SimpleQuad
 
   constructor: (@_program, @_debugProgram, @_geom) ->
     @_uid = window.get_uid()
@@ -17,17 +17,16 @@ class window.MyTree
     @_program.addUniformGL @_uid, "offs", @offs
     @_debugProgram.addUniformGL @_uid, "offs", @offs
 
-    @generateTree()
+    @generateQuad()
 
   drawGL: ->
-    @_geom.drawGL @_uid
     return
 
   doLogic: (delta) ->
     @handleDebug()
     return
 
-  generateTree: ->
+  generateQuad: ->
     @vecNets.push []
     col = new Vec 3, [0.1, 0.8, 0.0]
     @vecNets[0].push new Vec(4, [0.0, 0.0, 0.0, 1.0])

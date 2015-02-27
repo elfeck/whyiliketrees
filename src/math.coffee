@@ -52,6 +52,17 @@ class window.Vec
     sum += xx * xx for xx in @_data by 1
     return Math.sqrt(sum)
 
+  toHomVec: ->
+    if @dim < 2 or @dim > 4
+      window.dprint "toHomVec invalid dim"
+      return undefined
+    newdata = @_data.slice()
+    if @dim <= 2
+      newdata.push 0.0
+    if @dim <= 3
+      newdata.push 1.0
+    return new Vec(4, newdata)
+
   asUniformGL: (loc) ->
     switch @_data.length
       when 1 then GL.uniform1f loc, @_data[0]
@@ -82,6 +93,24 @@ class window.Vec
   @subVec: (v1, v2) ->
     return Vec.addVec v1, Vec.multScalar(v2, -1.0)
 
+  @scalarProd: (v1, v2) ->
+    if not v1.dim is v2.dim
+      window.dprint "Invalid vector dims for scalarProd"
+    sum = 0
+    for i in [0..v1.dim-1]
+      sum += v1.data()[i] * v2.data()[i]
+    return sum
+
+  @crossProd3: (u, v) ->
+    if u.dim != 3 or v.dim != 3
+      window.dprint "invalid vector dims for crossProd3"
+      return undefined
+    cprod = new Vec 3
+    cprod.data()[0] = u.data()[1] * v.data()[2] - u.data()[2] * v.data()[1]
+    cprod.data()[1] = u.data()[2] * v.data()[0] - u.data()[0] * v.data()[2]
+    cprod.data()[2] = u.data()[0] * v.data()[1] - u.data()[1] * v.data()[0]
+    return cprod
+
   @surfaceNormal: (a, b, c) ->
     if a.dim < 3 and b.dim < 3 and c.dim < 3
       window.dprint "Invalid vector dims for surface normal"
@@ -94,6 +123,23 @@ class window.Vec
       u.data()[0] * v.data()[1] - u.data()[1] * v.data()[0]
     ]
     return n
+
+  @orthogonalVec: (v) ->
+    for i in [0..v.dim-1]
+      continue if v.data()[i] == 0
+
+      sum = 0
+      (sum -= v.data()[j] if j != i) for j in [0..v.dim-1]
+      sum /= v.data()[i]
+
+      w = new Vec v.dim
+      for j in [0..v.dim-1]
+        if j == i
+          w.data()[j] = sum
+        else
+          w.data()[j] = 1
+      return w
+    return undefined
 
 class window.Mat
 

@@ -112,50 +112,54 @@ class window.Camera
 
   doLogic: (delta) ->
 
+    ornt = 1.0
+
     if window.input.keyPressed 65 # a
-      @_viewRotAngle -= @_rotSpeed * delta
+      @_viewRotAngle -= @_rotSpeed * delta * ornt
 
     if window.input.keyPressed 68 # d
-      @_viewRotAngle += @_rotSpeed * delta
+      @_viewRotAngle += @_rotSpeed * delta * ornt
 
     if window.input.keyPressed 87 # w
-      @_cameraPos.addVec window.Vec.multScalar(@_cameraDir, @_speed * delta)
+      @_cameraPos.addVec window.Vec.multScalar(
+        @_cameraDir, @_speed * delta * ornt)
 
     if window.input.keyPressed 83 # s
-      @_cameraPos.addVec window.Vec.multScalar(@_cameraDir, @_speed * -1.0 *
-        delta)
+      @_cameraPos.addVec window.Vec.multScalar(
+        @_cameraDir, @_speed * -1.0 * delta * ornt)
 
     if window.input.keyPressed(32) and not window.input.keyPressed(16)
-      @_cameraPos.data()[1] -= @_speed * delta
+      @_cameraPos.data()[1] -= @_speed * delta * ornt
     if window.input.keyPressed(16) and window.input.keyPressed(32)
-      @_cameraPos.data()[1] += @_speed * delta
+      @_cameraPos.data()[1] += @_speed * delta * ornt
 
     if not window.mouseActive
       if window.input.keyPressed 38 #up
-        @_xRotAngle -= @_rotSpeed * delta
+        @_xRotAngle -= @_rotSpeed * delta * ornt
 
       if window.input.keyPressed 40 #down
-        @_xRotAngle += @_rotSpeed * delta
+        @_xRotAngle += @_rotSpeed * delta * ornt
 
       if window.input.keyPressed 37 #left
-        @_yRotAngle -= @_rotSpeed * delta
+        @_yRotAngle -= @_rotSpeed * delta * ornt
 
       if window.input.keyPressed 39 #right
-        @_yRotAngle += @_rotSpeed * delta
+        @_yRotAngle += @_rotSpeed * delta * ornt
 
       if not (window.input.keyPressed(37) or window.input.keyPressed(39))
-        @_yRotAngle += -@_yRotAngle * @_rotSpeed * 4 * delta #snapback y-Rot
+        @_yRotAngle += -@_yRotAngle * @_rotSpeed * 4 * delta * ornt
+        #snapback y-Rot
 
     else
       if window.input.mouseY >= 0 and
       window.input.mouseY <= window.display.height and
       window.input.mouseDown
-        @_xRotAngle -= window.input.mouseDy * 0.01
+        @_xRotAngle -= window.input.mouseDy * 0.01 * ornt
 
       if window.input.mouseX >= 0 and
       window.input.mouseX <= window.display.width and
       window.input.mouseDown
-        @_yRotAngle += window.input.mouseDx * 0.01
+        @_yRotAngle += window.input.mouseDx * 0.01 * ornt
 
       if not window.input.mouseDown
         @_yRotAngle += -@_yRotAngle * 0.1 #snapback for y-Rot
@@ -170,9 +174,9 @@ class window.Camera
     return
 
   posToString: ->
-    x = @_cameraPos.data()[0] + ""
-    y = @_cameraPos.data()[1] + ""
-    z = @_cameraPos.data()[2] + ""
+    x = -@_cameraPos.data()[0] + ""
+    y = -@_cameraPos.data()[1] + ""
+    z = -@_cameraPos.data()[2] + ""
     a = (@_viewRotAngle %% 2 * Math.PI) / Math.PI + ""
     b = (@_xRotAngle %% 2 * Math.PI) / Math.PI + ""
     c = (@_yRotAngle %% 2 * Math.PI) / Math.PI + ""

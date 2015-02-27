@@ -4,7 +4,7 @@ class window.World
     @_uid = window.get_uid()
 
     @size = 10
-    @total = 50
+    @total = 10
 
     attenuLight = new AttenuationLight(new Vec 3, [0.0, 0.0, 0.0])
     attenuLight.addToProgram(@_program, @_uid)
@@ -18,7 +18,6 @@ class window.World
     @generateWorld()
 
   drawGL: ->
-    @_geom.drawGL @_uid
     return
 
   doLogic: (delta) ->
@@ -81,9 +80,12 @@ class window.World
     return dataSet
 
   yFunc: (x, z) ->
-    y = Math.min 50, (x * x + z * z)
-    return y + Math.random() * 5
-    #return 0.0
+    # y = Math.min 50, (x * x + z * z)
+    # return y + Math.random() * 5
+    if Math.sqrt(x * x + z * z) <= 2
+      return 0
+    else
+      return Math.random() * @size * 1.5
 
   handleDebug: ->
     if window.debug and window.wireFrame

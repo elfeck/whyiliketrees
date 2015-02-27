@@ -20,10 +20,10 @@ class window.GeomData
     offs = p.fetchIndexData iRaw, offs for p in @prims
     return offs
 
+
 class window.Primitive
 
-  constructor: (@vCount) ->
-    @vertices = []
+  constructor: (@vCount, @vertices = []) ->
 
   fetchVertexData: (vRaw) ->
     v.fetchVertexData vRaw for v in @vertices
@@ -36,8 +36,7 @@ class window.Primitive
 
 class window.Vertex
 
-  constructor: () ->
-    @data = []
+  constructor: (@data = []) ->
 
   fetchVertexData: (vRaw) ->
     v.fetchVertexData vRaw for v in @data
