@@ -20,8 +20,8 @@ window.dprint = (msg) ->
     #line = "[" + h + ":" + m + ":" + s  + "]  "
     line = ""
     console = document.getElementById("console")
-    console.append("\n" + line + msg)
-    console.scrollTop(console.scrollHeight)
+    console.innerHTML += ("\n" + line + msg)
+    console.scrollTop = console.scrollHeight
     window._knownLines.push msg
     return
 

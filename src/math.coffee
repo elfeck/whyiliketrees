@@ -5,13 +5,16 @@ class window.Vec
       @_data.push 0.0 for i in [1..dim] by 1
     @_mod = true
 
+  copy: ->
+    return new Vec @dim, @_data.slice()
+
   data: ->
     @_mod = true
     return @_data
 
   setData: (data) ->
     @_mod = true
-    @_data = data
+    @_data = data.slice()
     return this
 
   addVec: (v) ->
@@ -32,13 +35,12 @@ class window.Vec
     @_mod = true
     if m.dimX is not @dim
       window.dprint "Mismatched dim in vector-mat mult"
-
     newdata = []
     newdata.push 0.0 for i in [1..@dim] by 1
     for mr in [0..m.dimY-1] by 1
       for vr in [0..m.dimX-1] by 1
-        newdata[mr] += m.data()[mr * m.dimX + vr] * @_data[vr]
-    @_data = newdata
+        newdata[mr] += m.data()[vr * m.dimX + mr] * @_data[vr]
+    @setData newdata
     return this
 
   normalize: ->
@@ -52,6 +54,7 @@ class window.Vec
     sum += xx * xx for xx in @_data by 1
     return Math.sqrt(sum)
 
+  # todo naming because not self mod
   toHomVec: ->
     if @dim < 2 or @dim > 4
       window.dprint "toHomVec invalid dim"
@@ -92,6 +95,17 @@ class window.Vec
 
   @subVec: (v1, v2) ->
     return Vec.addVec v1, Vec.multScalar(v2, -1.0)
+
+  @toHomVec: (v) ->
+    if v.dim < 2 or v.dim > 4
+      window.dprint "toHomVec invalid dim"
+      return undefined
+    newdata = v.data().slice()
+    if v.dim <= 2
+      newdata.push 0.0
+    if v.dim <= 3
+      newdata.push 1.0
+    return new Vec(4, newdata)
 
   @scalarProd: (v1, v2) ->
     if not v1.dim is v2.dim
@@ -201,7 +215,7 @@ class window.Mat
 
   setData: (data) ->
     @_mod = true
-    @_data = data
+    @_data = data.slice()
     return this
 
   asUniformGL: (loc) ->
