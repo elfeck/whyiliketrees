@@ -19,28 +19,29 @@ window.dprint = (msg) ->
       s = "0" + s
     #line = "[" + h + ":" + m + ":" + s  + "]  "
     line = ""
-    $("#console").append("\n" + line + msg)
-    $("#console").scrollTop($("#console").scrollHeight)
+    console = document.getElementById("console")
+    console.append("\n" + line + msg)
+    console.scrollTop(console.scrollHeight)
     window._knownLines.push msg
     return
 
 window.setInfo = (i, msg) ->
-  $("#info" + i).text(msg)
+  document.getElementById("info" + i).innerHTML = msg
   return
 
 window.toggleDebug = ->
   window.debug = not window.debug
   window.wireFrame = false
   if window.debug
-    $("#console").show()
-    $("#info1").css("color", "#666666")
-    $("#info2").css("color", "#666666")
-    $("#info3").css("color", "#666666")
+    document.getElementById("console").style.display = "block"
+    document.getElementById("info1").style.color = "#666666"
+    document.getElementById("info2").style.color = "#666666"
+    document.getElementById("info3").style.color = "#666666"
   else
-    $("#console").hide()
-    $("#info1").css("color", "transparent")
-    $("#info2").css("color", "transparent")
-    $("#info3").css("color", "transparent")
+    document.getElementById("console").style.display = "none"
+    document.getElementById("info1").style.color = "transparent"
+    document.getElementById("info2").style.color = "transparent"
+    document.getElementById("info3").style.color = "transparent"
   return
 
 window.getShaderAttributes = (vertSrc) ->

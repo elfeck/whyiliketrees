@@ -1,5 +1,3 @@
-(($) -> ) jQuery
-
 window.GL = undefined
 window.camera = undefined
 window.input = undefined
@@ -35,9 +33,9 @@ class window.Display
     @_scene = undefined
 
   initGL: (canvas) ->
-    canvas.attr("width", @width)
-    canvas.attr("height", @height)
-    window.GL = canvas[0].getContext "experimental-webgl", {
+    canvas.setAttribute("width", @width)
+    canvas.setAttribute("height", @height)
+    window.GL = canvas.getContext "experimental-webgl", {
       antialias: true
     }
     #console.log GL.getContextAttributes().antialias
@@ -117,9 +115,10 @@ updateGL = ->
   window.requestAnimationFrame updateGL
   return
 
-$ ->
+document.addEventListener('DOMContentLoaded', () ->
   window.display = new Display
-  window.display.initGL $("#canvas")
+  window.display.initGL document.getElementById("canvas")
   window.display.initGame()
   updateGL()
   return
+)

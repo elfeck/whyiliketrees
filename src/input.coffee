@@ -2,7 +2,7 @@ class window.Input
 
   constructor: () ->
     @_keys = (false for [1..255])
-    @_canvas = $("#canvas")
+    @_canvas = document.getElementById "canvas"
 
     @mouseX = undefined
     @mouseY = undefined
@@ -11,11 +11,15 @@ class window.Input
     @mouseDx = 0
     @mouseDy = 0
 
-    $(window).on "keydown", (event) => @handleKeyDown event
-    $(window).on "keyup", (event) => @handleKeyUp event
-    $(window).on "mousemove", (event) => @handleMouseMove event
-    $(window).on "mousedown", (event) => @handleMouseDown event
-    $(window).on "mouseup", (event) => @handleMouseUp event
+    rect = @_canvas.getBoundingClientRect()
+    @_offsleft = rect.left + document.body.scrollLeft
+    @_offstop = rect.top + document.body.scrollTop
+
+    window.onkeydown = (event) => @handleKeyDown event
+    window.onkeyup = (event) => @handleKeyUp event
+    window.onmousemove = (event) => @handleMouseMove event
+    window.onmousedown = (event) => @handleMouseDown event
+    window.onmouseup = (event) => @handleMouseUp event
 
   handleKeyDown: (event) ->
     @_keys[event.keyCode] = true
@@ -28,8 +32,8 @@ class window.Input
     return
 
   handleMouseMove: (event) ->
-    x = event.pageX - @_canvas.offset().left
-    y = event.pageY - @_canvas.offset().top
+    x = event.pageX - @_offsleft
+    y = event.pageY - @_offstop
     if @mouseX? and @mouseY?
       @mouseDx = -(@mouseX - x)
       @mouseDy = (@mouseY - y)
