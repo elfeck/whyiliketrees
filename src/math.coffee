@@ -21,15 +21,29 @@ class window.Vec
     @_mod = true
     if v.dim != @dim
       window.dprint "Mismatched dim in vector add"
-    for i in [0..@dim-1] by 1
-      @_data[i] += v.data()[i]
+    @_data[i] += v.data()[i] for i in [0..@dim-1] by 1
+    return this
+
+  subVec: (v) ->
+    @_mod = true
+    if v.dim != @dim
+      window.dprint "Mismatched dim in vector add/sub"
+    @_data[i] -= v.data()[i] for i in [0..@dim-1] by 1
+    return this
+
+
+  multVec: (v) ->
+    @_mod = true
+    if v.dim != @dim
+      window.dprint "Mismatched dim in vector mult"
+    @_data[i] *= v.data()[i] for i in [0..@dim-1] by 1
     return this
 
   multScalar: (s) ->
     @_mod = true
-    for i in [0..@dim-1] by 1
-      @_data[i] *= s
+    @_data[i] *= s for i in [0..@dim-1] by 1
     return this
+
 
   multMat: (m) ->
     @_mod = true
@@ -54,17 +68,21 @@ class window.Vec
     sum += xx * xx for xx in @_data by 1
     return Math.sqrt(sum)
 
-  # todo naming because not self mod
-  toHomVec: ->
+  toHomVecC: ->
     if @dim < 2 or @dim > 4
       window.dprint "toHomVec invalid dim"
       return undefined
     newdata = @_data.slice()
-    if @dim <= 2
-      newdata.push 0.0
-    if @dim <= 3
-      newdata.push 1.0
+    newdata.push 0.0 if @dim <= 2
+    newdata.push 1.0 if @dim <= 3
     return new Vec(4, newdata)
+
+  scalarProd: (v) ->
+    if not dim is v.dim
+      window.dprint "Invalid vector dims for scalarProd"
+    sum = 0
+    sum += data()[i] * v.data()[i] for i in [0..dim-1]
+    return sum
 
   asUniformGL: (loc) ->
     switch @_data.length
@@ -81,39 +99,20 @@ class window.Vec
     @_mod = false
     return
 
-  @multScalar: (v, s) ->
-    nv = new Vec v.dim, v.data().slice()
-    return nv.multScalar s
-
-  @addVec: (v1, v2) ->
-    if not v1.dim is v2.dim
-      window.dprint "Invalid vector dims for addVec"
-      return undefined
-    v = new Vec v1.dim
-    v.data()[i] = v1.data()[i] + v2.data()[i] for i in [0..v1.dim-1]
-    return v
-
-  @subVec: (v1, v2) ->
-    return Vec.addVec v1, Vec.multScalar(v2, -1.0)
-
-  @toHomVec: (v) ->
-    if v.dim < 2 or v.dim > 4
-      window.dprint "toHomVec invalid dim"
-      return undefined
-    newdata = v.data().slice()
-    if v.dim <= 2
-      newdata.push 0.0
-    if v.dim <= 3
-      newdata.push 1.0
-    return new Vec(4, newdata)
-
-  @scalarProd: (v1, v2) ->
-    if not v1.dim is v2.dim
-      window.dprint "Invalid vector dims for scalarProd"
-    sum = 0
-    for i in [0..v1.dim-1]
-      sum += v1.data()[i] * v2.data()[i]
-    return sum
+  # utility methods
+  addVecC: (v) -> return @copy().addVec v
+  subVecC: (v) -> return @copy().subVec v
+  multVecC: (v) -> return @copy().multVec v
+  multScalarC: (s) -> return @copy().multScalar s
+  multMatC: (m) -> return @copy().multMat m
+  normalizeC: -> return @copy().normalize()
+  @addVec: (v1, v2) -> return v1.addVecC v2
+  @subVec: (v1, v2) -> return v1.subVecC v2
+  @multVec: (v1, v2) -> return v1.multVecC v2
+  @multScalar: (v, s) -> return v.multScalarC s
+  @normalize: (v) -> return v.normalizeC()
+  @toHomVec: (v) -> return v.toHomVecC()
+  @scalarProd: (v1, v2) -> return v1.scalarProd v2
 
   @crossProd3: (u, v) ->
     if u.dim != 3 or v.dim != 3
@@ -141,11 +140,9 @@ class window.Vec
   @orthogonalVec: (v) ->
     for i in [0..v.dim-1]
       continue if v.data()[i] == 0
-
       sum = 0
       (sum -= v.data()[j] if j != i) for j in [0..v.dim-1]
       sum /= v.data()[i]
-
       w = new Vec v.dim
       for j in [0..v.dim-1]
         if j == i
@@ -178,15 +175,12 @@ class window.Mat
     a = this
     if a.dimX is not b.dimY
       window.dprint "Cannot mult 2 Mat with mismatched dims in math.coffee"
-
     c = new Mat b.dimX, a.dimY
-
     for ar in [0..a.dimY-1] by 1
       for bc in [0..b.dimX-1] by 1
         for ac in [0..a.dimX-1] by 1
           c.data()[c.dimX * ar + bc] += a.data()[a.dimX * ar + ac] *
             b.data()[b.dimX * ac + bc]
-
     @setData c.data()
     return this
 
@@ -194,15 +188,12 @@ class window.Mat
     b = this
     if a.dimX is not b.dimY
       window.dprint "Cannot mult 2 Mat with mismatched dims in math.coffee"
-
     c = new Mat b.dimX, a.dimY
-
     for ar in [0..a.dimY-1] by 1
       for bc in [0..b.dimX-1] by 1
         for ac in [0..a.dimX-1] by 1
           c.data()[c.dimX * ar + bc] += a.data()[a.dimX * ar + ac] *
             b.data()[b.dimX * ac + bc]
-
     @setData c.data()
     return this
 
@@ -210,7 +201,7 @@ class window.Mat
     @_mod = true
     @dimX = m.dimX
     @dimY = m.dimY
-    @_data = m.data().slice()
+    @setData m.data()
     return this
 
   setData: (data) ->
@@ -230,13 +221,10 @@ class window.Mat
   @mult: (a, b) ->
     if a.dimX is not b.dimY
       window.dprint "Cannot mult 2 Mat with mismatched dims in math.coffee"
-
     c = new Mat b.dimX, a.dimY
-
     for ar in [0..a.dimY-1] by 1
       for bc in [0..b.dimX-1] by 1
         for ac in [0..a.dimX-1] by 1
           c.data()[c.dimX * ar + bc] += a.data()[a.dimX * ar + ac] *
             b.data()[b.dimX * ac + bc]
-
     return c

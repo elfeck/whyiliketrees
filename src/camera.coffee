@@ -2,7 +2,7 @@ class window.Camera
 
   constructor: ->
     @_cameraPos = new Vec 3, [0.0, 0.0, 0.0]
-    # this is needed for x/y rotation axis. icamPos = -camPos. No idea why.
+    # this is needed for x,y rotation axis. icamPos = -camPos
     @_icameraPos = new Vec 3, [0.0, 0.0, 0.0]
     @_cameraDir = new Vec 3, [1.0, 0.0, 1.0]
 
@@ -47,6 +47,7 @@ class window.Camera
   update: ->
     # update for the rotation axis
     @_icameraPos.setData(@_cameraPos.data()).multScalar(-1.0)
+
     @_lMat.data()[12] = @_cameraPos.data()[0]
     @_lMat.data()[13] = @_cameraPos.data()[1]
     @_lMat.data()[14] = @_cameraPos.data()[2]
@@ -54,33 +55,30 @@ class window.Camera
     # rotating camera direction vector
     cc = Math.cos -@_viewRotAngle
     ss = Math.sin -@_viewRotAngle
-    rm = new Mat 3, 3
+    rm = new Mat 3, 3 # rotation around y-axis
     rm.toId()
     rm.data()[0] = cc
     rm.data()[2] = -ss
     rm.data()[6] = ss
     rm.data()[8] = cc
 
-    @_cameraDir.setData([0.0, 0.0, 1.0])
+    @_cameraDir.setData([0.0, 0.0, 1.0]) # rotate view vector
     @_cameraDir.multMat(rm)
     @_cameraDir.normalize()
 
     vp = new Mat(4, 4).toId()
 
-    @setRotMatrix @_viewRotAngle, @_yRotAxis
+    @_yRotAxis.getRotationMatrix @_viewRotAngle, @_rMat
     vp.multFromLeft @_rMat
-    @setRotMatrix @_yRotAngle, @_yRotAxis
+    @_yRotAxis.getRotationMatrix @_yRotAngle, @_rMat
     vp.multFromLeft @_rMat
-    @setRotMatrix @_xRotAngle, @_xRotAxis
+    @_xRotAxis.getRotationMatrix @_xRotAngle, @_rMat
     vp.multFromLeft @_rMat
 
     vp.multFromLeft @_lMat
     vp.multFromLeft @_pMat
     @_vpMat.setTo vp
     return
-
-  setRotMatrix: (angle, axis) ->
-    axis.getRotationMatrix angle, @_rMat
 
   doLogic: (delta) ->
 
@@ -91,12 +89,10 @@ class window.Camera
       @_viewRotAngle += @_rotSpeed * delta
 
     if window.input.keyPressed 87 # w
-      @_cameraPos.addVec window.Vec.multScalar(
-        @_cameraDir, @_speed * delta)
+      @_cameraPos.addVec @_cameraDir.multScalarC(@_speed * delta)
 
     if window.input.keyPressed 83 # s
-      @_cameraPos.addVec window.Vec.multScalar(
-        @_cameraDir, @_speed * -1.0 * delta)
+      @_cameraPos.addVec @_cameraDir.multScalarC(-@_speed * delta)
 
     if window.input.keyPressed(32) and not window.input.keyPressed(16)
       @_cameraPos.data()[1] -= @_speed * delta
@@ -122,21 +118,20 @@ class window.Camera
 
     else
       if window.input.mouseY >= 0 and
-      window.input.mouseY <= window.display.height and
-      window.input.mouseDown
+         window.input.mouseY <= window.display.height and
+         window.input.mouseDown
         @_xRotAngle -= window.input.mouseDy * 0.01
 
       if window.input.mouseX >= 0 and
-      window.input.mouseX <= window.display.width and
-      window.input.mouseDown
+         window.input.mouseX <= window.display.width and
+         window.input.mouseDown
         @_yRotAngle += window.input.mouseDx * 0.01
 
-      if not window.input.mouseDown
-        @_yRotAngle += -@_yRotAngle * 0.1 #snapback for y-Rot
+        #snapback for y-Rot
+        @_yRotAngle += -@_yRotAngle * 0.1 if not window.input.mouseDown
 
     @_xRotAngle = Math.max -Math.PI * 0.25, @_xRotAngle
     @_xRotAngle = Math.min Math.PI * 0.25, @_xRotAngle
-
     @_yRotAngle = Math.max -Math.PI * 0.25, @_yRotAngle
     @_yRotAngle = Math.min Math.PI * 0.25, @_yRotAngle
 

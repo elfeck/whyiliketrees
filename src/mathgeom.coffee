@@ -3,12 +3,12 @@ class window.Line
   constructor: (@base, @dir) ->
 
   pointAtDistance: (dist) ->
-    return Vec.addVec @base, Vec.multScalar(@dir, dist)
+    return @base.addVecC(@dir.multScalarC(dist))
 
   toColoredLineSeg: (bdist, length, color = new Vec(3, [1.0, 1.0, 1.0])) ->
     verts = [
-      new Vertex([@pointAtDistance(bdist).toHomVec(), color]),
-      new Vertex([@pointAtDistance(bdist + length).toHomVec(), color])
+      new Vertex([@pointAtDistance(bdist).toHomVecC(), color]),
+      new Vertex([@pointAtDistance(bdist + length).toHomVecC(), color])
     ]
     prim = new Primitive 2, verts
     return prim
@@ -102,15 +102,10 @@ class window.Plane
     nline = new Line @base, @norm
     rmat = nline.getRotationMatrix angle
 
-    vec1 = Vec.addVec(@base, Vec.multScalar(dir1, dist)).toHomVec()
-    vec2 = Vec.addVec(@base, Vec.multScalar(dir2, dist)).toHomVec()
-    vec3 = Vec.addVec(@base, Vec.multScalar(dir1, -dist)).toHomVec()
-    vec4 = Vec.addVec(@base, Vec.multScalar(dir2, -dist)).toHomVec()
-
-    vec1.multMat rmat
-    vec2.multMat rmat
-    vec3.multMat rmat
-    vec4.multMat rmat
+    vec1 = @base.addVecC(dir1.multScalarC(dist)).toHomVecC().multMat(rmat)
+    vec2 = @base.addVecC(dir2.multScalarC(dist)).toHomVecC().multMat(rmat)
+    vec3 = @base.addVecC(dir1.multScalarC(-dist)).toHomVecC().multMat(rmat)
+    vec4 = @base.addVecC(dir2.multScalarC(-dist)).toHomVecC().multMat(rmat)
 
     vert1 = new Vertex([vec1, color])
     vert2 = new Vertex([vec2, color])
