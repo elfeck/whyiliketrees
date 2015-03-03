@@ -5,7 +5,7 @@ class window.Line
   pointAtDistance: (dist) ->
     return @base.addVecC(@dir.multScalarC(dist))
 
-  toColoredLineSeg: (bdist, length, color = new Vec(3, [1.0, 1.0, 1.0])) ->
+  coloredLineSeg: (bdist, length, color = new Vec(3, [1.0, 1.0, 1.0])) ->
     verts = [
       new Vertex([@pointAtDistance(bdist).toHomVecC(), color]),
       new Vertex([@pointAtDistance(bdist + length).toHomVecC(), color])
@@ -48,7 +48,7 @@ class window.Line
     rmat.data()[15] = 1.0
     return rmat
 
-  rotatePoint: (angle, point) ->
+  rotatePoint: (point, angle) ->
     cc = Math.cos angle
     ss = Math.sin angle
     ic = 1 - cc
@@ -72,8 +72,8 @@ class window.Line
       ic + z * cc + (-b * u + a * v - v * x + u * y) * ss
     return point
 
-  rotatePoint_N: (angle, point) ->
-    return @rotatePoint angle, point.copy()
+  rotatePointC: (point, angle) ->
+    return @rotatePoint point.copy(), point
 
 class window.Plane
 
@@ -81,7 +81,7 @@ class window.Plane
     @norm = new Vec 3, unorm.data().slice()
     @norm.normalize()
 
-  toColoredLineSegs: (dist1, dist2, color = new Vec(3, [1.0, 1.0, 1.0])) ->
+  coloredLineSegs: (dist1, dist2, color = new Vec(3, [1.0, 1.0, 1.0])) ->
     dir1 = Vec.orthogonalVec(@norm).normalize()
     dir2 = Vec.crossProd3(@norm, dir1).normalize()
 
@@ -93,7 +93,7 @@ class window.Plane
 
     return [prim1, prim2]
 
-  toColoredRect: (dist, angle, color = new Vec(3, [1.0, 1.0, 1.0])) ->
+  coloredRect: (dist, angle, color = new Vec(3, [1.0, 1.0, 1.0])) ->
     dir1 = Vec.orthogonalVec(@norm).normalize()
     dir2 = Vec.crossProd3(@norm, dir1).normalize()
 
@@ -117,5 +117,41 @@ class window.Plane
 
     return [prim1, prim2]
 
+  coloredRegNGon: (n, cdist, color = new Vec(3, [1.0, 1.0, 1.0])) ->
+
   getPlaneParam: ->
     return @norm.data().concat -Vec.scalarProd(@norm, @base)
+
+
+class window.Polygon
+
+  constructor: (@points) ->
+
+  coloredOutline: (color = new Vec(3, [1.0, 1.0, 1.0])) ->
+    verts = []
+    n = @points.length
+    verts.push(new Vertex([@points[i], color])) for i in [0..n-1]
+    prims = []
+    prims.push(new Primitive 2, [verts[i], verts[i + 1]]) for i in [0..n-2]
+    prims.push(new Primitive 2, [verts[n - 1], verts[0]])
+    return prims
+
+  # only working for convex polygons
+  coloredArea: (color = new Vec(3, [1.0, 1.0, 1.0])) ->
+    verts = []
+    n = @points.length
+    verts.push(new Vertex([@points[i], color])) for i in [0..n-1]
+    prims = []
+    for i in [0..n-2]
+      prims.push(new Primitive 3, [verts[0], verts[i], verts[i + 1]])
+    return prims
+
+  @regularFromLine: (line, n, cdist) ->
+    angle = 2.0 * Math.PI / n
+    vecs = []
+    dir = Vec.orthogonalVec(line.dir).normalize()
+    for i in [0..n-1]
+      vec = line.base.addVecC(dir.multScalarC cdist)
+      line.rotatePoint vec, angle * i
+      vecs.push vec.toHomVecC()
+    return new Polygon vecs

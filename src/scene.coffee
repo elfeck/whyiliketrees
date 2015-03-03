@@ -25,28 +25,11 @@ class window.Scene
     return
 
   constructLine: ->
-    base = new Vec(3, [10.0, 1.0, 2.0])
-    dir = new Vec(3, [0.0, 1.0, 0.0])
-    dist = 5
-    col = new Vec(3, [1.0, 0.4, 0.4])
-
-    line1 = new Line base, dir
-    prim1 = [line1.toColoredLineSeg(0, dist)]
-    dataSet = new GeomData window.get_uid(), @_simpleColShader, prim1, GL.LINES
-    @_simpleColGeom.addData dataSet
-
-    plane1 = new Plane base, dir
-    plane2 = new Plane Vec.addVec(base, Vec.multScalar(dir, dist)), dir
-
-    prim2 = plane1.toColoredRect(5, Math.PI / 8.0, col).concat(
-      plane2.toColoredRect(5, 0, col))
-    prim3 = plane1.toColoredRect(5, 0, col).concat(
-      plane2.toColoredRect(5, 0, col))
-    dataSet2 = new GeomData window.get_uid(), @_simpleColShader,
-      prim2, GL.TRIANGLES
-    @_simpleColGeom.addData dataSet2
-
-    #primCamera = window.camera._yRotAxis.toColoredLineSeg -100, 100
-    #dataSet3 = new GeomData window.get_uid(), @_simpleColShader, [primCamera],
-    #  GL.LINES
-    #@_simpleColGeom.addData dataSet3
+    line = new Line(new Vec(3, [0.0, 0.0, -5.0]), new Vec(3, [0.0, 0.0, 1.0]))
+    poly = Polygon.regularFromLine line, 7, 5
+    outlineDS = new GeomData window.get_uid(), @_simpleColShader,
+      poly.coloredOutline(), GL.LINES
+    areaDS = new GeomData window.get_uid(), @_simpleColShader,
+      poly.coloredArea(new Vec(3, [0.8, 0.2, 0.2])), GL.TRIANGLES
+    @_simpleColGeom.addData outlineDS
+    @_simpleColGeom.addData areaDS
