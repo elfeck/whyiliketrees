@@ -68,6 +68,9 @@ class window.Vec
     sum += xx * xx for xx in @_data by 1
     return Math.sqrt(sum)
 
+  distance: (v) ->
+    return v.subVecC(this).length()
+
   toHomVecC: ->
     if @dim < 2 or @dim > 4
       window.dprint "toHomVec invalid dim"
@@ -111,6 +114,7 @@ class window.Vec
   @multVec: (v1, v2) -> return v1.multVecC v2
   @multScalar: (v, s) -> return v.multScalarC s
   @normalize: (v) -> return v.normalizeC()
+  @distance: (v1, v2) -> return v1.distance v2
   @toHomVec: (v) -> return v.toHomVecC()
   @scalarProd: (v1, v2) -> return v1.scalarProd v2
 

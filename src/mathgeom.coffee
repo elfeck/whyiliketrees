@@ -5,13 +5,16 @@ class window.Line
   pointAtDistance: (dist) ->
     return @base.addVecC(@dir.multScalarC(dist))
 
+  shiftBaseC: (dist) ->
+    return new Line @pointAtDistance(dist), @dir.copy()
+
   coloredLineSeg: (bdist, length, color = new Vec(3, [1.0, 1.0, 1.0])) ->
     verts = [
       new Vertex([@pointAtDistance(bdist).toHomVecC(), color]),
       new Vertex([@pointAtDistance(bdist + length).toHomVecC(), color])
     ]
     prim = new Primitive 2, verts
-    return prim
+    return [prim]
 
   getRotationMatrix: (angle, rmat = new Mat(4, 4)) ->
     cc = Math.cos angle
@@ -75,6 +78,9 @@ class window.Line
   rotatePointC: (point, angle) ->
     return @rotatePoint point.copy(), point
 
+  @fromPoints: (p1, p2) ->
+    return new Line p1.copy(), p2.subVecC(p1).normalize()
+
 class window.Plane
 
   constructor: (@base, unorm) ->
@@ -127,6 +133,10 @@ class window.Polygon
 
   constructor: (@points) ->
 
+  rotateAroundLine: (line, angle) ->
+    rmat = line.getRotationMatrix angle
+    p.multMat rmat for p in @points
+
   coloredOutline: (color = new Vec(3, [1.0, 1.0, 1.0])) ->
     verts = []
     n = @points.length
@@ -155,3 +165,22 @@ class window.Polygon
       line.rotatePoint vec, angle * i
       vecs.push vec.toHomVecC()
     return new Polygon vecs
+
+  @lineconnectPolys: (poly1, poly2, color = new Vec 3, [1.0, 1.0, 1.0]) ->
+    lines = []
+    dists = []
+    p2points = poly2.points.slice()
+    for p1 in poly1.points
+      minp2 = undefined
+      mindist = 100000
+      for p2 in p2points
+        if p1.distance(p2) < mindist
+          minp2 = p2
+          mindist = p1.distance(p2)
+      lines.push Line.fromPoints p1, minp2
+      dists.push mindist
+      p2points.splice(p2points.indexOf(minp2), 1)
+    prims = []
+    for i in [0..lines.length-1]
+      prims = prims.concat lines[i].coloredLineSeg(0, dists[i])
+    return prims
