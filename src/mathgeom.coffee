@@ -167,8 +167,7 @@ class window.Polygon
     return new Polygon vecs
 
   @lineconnectPolys: (poly1, poly2, color = new Vec 3, [1.0, 1.0, 1.0]) ->
-    lines = []
-    dists = []
+    prims = []
     p2points = poly2.points.slice()
     for p1 in poly1.points
       minp2 = undefined
@@ -177,10 +176,32 @@ class window.Polygon
         if p1.distance(p2) < mindist
           minp2 = p2
           mindist = p1.distance(p2)
-      lines.push Line.fromPoints p1, minp2
-      dists.push mindist
+      vert1 = new Vertex [p1.copy(), color]
+      vert2 = new Vertex [minp2, color]
+      prims.push new Primitive 2, [vert1, vert2]
       p2points.splice(p2points.indexOf(minp2), 1)
+    return prims
+
+  @triangleconnectPolys: (poly1, poly2, color = new Vec 3, [1.0, 1.0, 1.0]) ->
     prims = []
-    for i in [0..lines.length-1]
-      prims = prims.concat lines[i].coloredLineSeg(0, dists[i])
+    usedInd = []
+    usedInd.push -1 for i in [1..n]
+    n = poly1.points.length
+    for i in [0..n-1]
+      p1 = poly1.points[i]
+      mindist = 100000
+      for j in [0..n-1]
+        p2 = poly2.points[j]
+        if p1.distance(p2) < mindist and usedInd.indexOf(j) == -1
+          mindist = p1.distance(p2)
+          usedInd[i] = j
+      minp2 = usedInd[usedInd.length-1]
+      console.log minp2
+      vert1 = new Vertex [poly1.points[i].copy(), color]
+      vert2 = new Vertex [poly2.points[minp2].copy(), color]
+      vert3 = new Vertex [poly1.points[(i + 1) %% n].copy(), color]
+      vert4 = new Vertex [poly2.points[(minp2 + 1) %% n].copy(), color]
+      color = color.subVecC new Vec 3, [1.0 / n, 0, 0]
+      prims.push new Primitive 3, [vert1, vert2, vert3]
+      prims.push new Primitive 3, [vert2, vert3, vert4]
     return prims
