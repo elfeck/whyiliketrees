@@ -12,7 +12,6 @@ class window.Geom
   initGL: ->
     @_vb = GL.createBuffer()
     @_ib = GL.createBuffer()
-    GL.enableVertexAttribArray i for i in [0..@_layout.length-1]
     return
 
   drawGL: () ->
@@ -67,6 +66,7 @@ class window.Geom
   bindGL: ->
     GL.bindBuffer GL.ARRAY_BUFFER, @_vb
     GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, @_ib
+    GL.enableVertexAttribArray i for i in [0..@_layout.length-1]
     offs = 0
     for own index, size of @_layout
       @setAttribGL index, size, offs
@@ -76,6 +76,7 @@ class window.Geom
   unbindGL: ->
     GL.bindBuffer GL.ARRAY_BUFFER, null
     GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, null
+    GL.disableVertexAttribArray i for i in [0..@_layout.length-1]
     return
 
   setAttribGL: (i, s, offs) ->

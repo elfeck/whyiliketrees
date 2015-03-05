@@ -113,10 +113,12 @@ class window.Plane
     vec3 = @base.addVecC(dir1.multScalarC(-dist)).toHomVecC().multMat(rmat)
     vec4 = @base.addVecC(dir2.multScalarC(-dist)).toHomVecC().multMat(rmat)
 
-    vert1 = new Vertex([vec1, color])
-    vert2 = new Vertex([vec2, color])
-    vert3 = new Vertex([vec3, color])
-    vert4 = new Vertex([vec4, color])
+    normal = Vec.surfaceNormal vec1, vec2, vec3
+
+    vert1 = new Vertex([vec1, color, normal])
+    vert2 = new Vertex([vec2, color, normal])
+    vert3 = new Vertex([vec3, color, normal])
+    vert4 = new Vertex([vec4, color, normal])
 
     prim1 = new Primitive 3, [vert1, vert2, vert3]
     prim2 = new Primitive 3, [vert3, vert4, vert1]
@@ -150,7 +152,8 @@ class window.Polygon
   coloredArea: (color = new Vec(3, [1.0, 1.0, 1.0])) ->
     verts = []
     n = @points.length
-    verts.push(new Vertex([@points[i], color])) for i in [0..n-1]
+    normal = Vec.surfaceNormal @points[0], @points[1], @points[2]
+    verts.push(new Vertex([@points[i], color, normal])) for i in [0..n-1]
     prims = []
     for i in [0..n-2]
       prims.push(new Primitive 3, [verts[0], verts[i], verts[i + 1]])
@@ -181,13 +184,21 @@ class window.Polygon
     n = poly1.points.length
     prims = []
     for i in [0..n-1]
-      vert1 = new Vertex [poly1.points[(i + minInd[0]) %% n], color]
-      vert2 = new Vertex [poly2.points[(i + minInd[1]) %% n], color]
-      vert3 = new Vertex [poly1.points[(i + 1 + minInd[0]) %% n], color]
-      vert4 = new Vertex [poly2.points[(i + 1 + minInd[1]) %% n], color]
+      vecs = [
+        poly1.points[(i + minInd[0]) %% n],
+        poly2.points[(i + minInd[1]) %% n],
+        poly1.points[(i + 1 + minInd[0]) %% n],
+        poly2.points[(i + 1 + minInd[1]) %% n]
+      ]
+      normal1 = Vec.surfaceNormal vecs[0], vecs[1], vecs[2]
+      normal2 = Vec.surfaceNormal vecs[1], vecs[2], vecs[3]
+      verts1 = []
+      verts2 = []
+      verts1.push new Vertex [vecs[i], color, normal1] for i in [0..2]
+      verts2.push new Vertex [vecs[i], color, normal2] for i in [1..3]
       color = color.subVecC new Vec 3, [1.0 / n, 0.0, 0.0]
-      prims.push new Primitive 3, [vert1, vert2, vert3]
-      prims.push new Primitive 3, [vert2, vert3, vert4]
+      prims.push new Primitive 3, verts1
+      prims.push new Primitive 3, verts2
     return prims
 
   @_minDistPairIndices: (poly1, poly2) ->

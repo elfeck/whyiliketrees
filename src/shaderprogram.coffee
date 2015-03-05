@@ -50,6 +50,7 @@ class window.ShaderProgram
   addUniformGL: (id, name, uniform) ->
     uni =
       id: id
+      name: name #debug
       uniform: uniform
       location: GL.getUniformLocation @_program, name
     @_uniforms.push uni
