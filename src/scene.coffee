@@ -27,7 +27,7 @@ class window.Scene
   buildSceen: ->
     line1 = new Line(new Vec(3, [0.0, 0.0, -5.0]), new Vec(3, [0.0, 0.0, 1.0]))
     line2 =
-      new Line(new Vec(3, [0.0, 0.0, -10.0]), new Vec(3, [0.0, 0.0, 1.0]))
+      new Line(new Vec(3, [0.0, 0.0, -15.0]), new Vec(3, [0.0, 0.0, 1.0]))
 
     poly1 = Polygon.regularFromLine line1, 7, 5
     poly2 = Polygon.regularFromLine line2, 7, 5
