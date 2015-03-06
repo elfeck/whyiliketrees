@@ -33,6 +33,25 @@ class window.Primitive
     iRaw.push(i + offs) for i in [0..@vCount-1] by 1
     return offs + @vCount
 
+  vertexNormalLines: (length, color) ->
+    if @vCount is not 3
+      window.dprint "No triangle, no normal"
+    prims = []
+    for v in @vertices
+      line = new Line v.data[0].stripHomC(), v.data[2].copy()
+      prims = prims.concat line.coloredLineSeg(0, length, color)
+    return prims
+
+  centroidNormalLines: (length, color) ->
+    if @vCount is not 3
+      window.dprint "No triangle, no normal"
+    centroid = new Vec 3
+    for v in @vertices
+      centroid.addVec v.data[0].stripHomC()
+    line = new Line centroid.multScalar(1.0 / 3.0),
+      @vertices[0].data[2].normalizeC()
+    return line.coloredLineSeg 0, length, color
+
 
 class window.Vertex
 

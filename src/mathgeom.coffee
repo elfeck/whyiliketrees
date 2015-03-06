@@ -190,13 +190,12 @@ class window.Polygon
         poly1.points[(i + 1 + minInd[0]) %% n],
         poly2.points[(i + 1 + minInd[1]) %% n]
       ]
-      normal1 = Vec.surfaceNormal vecs[0], vecs[1], vecs[2]
+      normal1 = Vec.surfaceNormal vecs[2], vecs[1], vecs[0]
       normal2 = Vec.surfaceNormal vecs[1], vecs[2], vecs[3]
       verts1 = []
       verts2 = []
       verts1.push new Vertex [vecs[i], color, normal1] for i in [0..2]
       verts2.push new Vertex [vecs[i], color, normal2] for i in [1..3]
-      color = color.subVecC new Vec 3, [1.0 / n, 0.0, 0.0]
       prims.push new Primitive 3, verts1
       prims.push new Primitive 3, verts2
     return prims

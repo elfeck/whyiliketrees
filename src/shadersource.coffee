@@ -97,8 +97,7 @@ vec3 compLight() {\n
     dist = length(light_dir);\n
     att_factor = max(0.0, 1.0 - dist / lights[i].light_att);\n
 
-    light_dir = normalize(light_dir);\n
-    cos_ang = dot(normalize(frag_norm), light_dir);\n
+    cos_ang = dot(normalize(frag_norm), normalize(light_dir));\n
     cos_ang = clamp(cos_ang, 0.0, 1.0);\n
 
     total_light += cos_ang * att_factor * lights[i].light_int * frag_col;\n

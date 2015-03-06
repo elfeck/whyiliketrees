@@ -20,7 +20,7 @@ class window.Vec
   addVec: (v) ->
     @_mod = true
     if v.dim != @dim
-      window.dprint "Mismatched dim in vector add"
+      window.dprint "Mismatched dim in vector add " + @dim + " vs " + v.dim
     @_data[i] += v.data()[i] for i in [0..@dim-1] by 1
     return this
 
@@ -73,12 +73,29 @@ class window.Vec
 
   toHomVecC: ->
     if @dim < 2 or @dim > 4
-      window.dprint "toHomVec invalid dim"
+      window.dprint "toHomVecC invalid dim"
       return undefined
     newdata = @_data.slice()
     newdata.push 0.0 if @dim <= 2
     newdata.push 1.0 if @dim <= 3
     return new Vec(4, newdata)
+
+  fromHomVecC: ->
+    if @dim is not 4
+      window.dprint "fromHomVecC invalid dim"
+      return undefined
+    newdata = []
+    newdata.push @_data[i] for i in [0..2]
+    vec = new Vec 3, newdata
+    return vec.multScalar(1.0 / @_data[3])
+
+  stripHomC: ->
+    if @dim is not 4
+      window.dprint "stripHomC invalid dim"
+      return undefined
+    newdata = []
+    newdata.push @_data[i] for i in [0..2]
+    return new Vec 3, newdata
 
   scalarProd: (v) ->
     if not dim is v.dim
@@ -116,6 +133,7 @@ class window.Vec
   @normalize: (v) -> return v.normalizeC()
   @distance: (v1, v2) -> return v1.distance v2
   @toHomVec: (v) -> return v.toHomVecC()
+  @fromHomVec: (v) -> return v.fromHomVecC()
   @scalarProd: (v1, v2) -> return v1.scalarProd v2
 
   @crossProd3: (u, v) ->
