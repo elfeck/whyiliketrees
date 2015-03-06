@@ -13,9 +13,18 @@ class window.Scene
     @_areaShader.initGL()
     @_areaShader.addUniformGL(0, "offs", new Vec(3, [0.0, 0.0, 0.0]))
 
-    @_pointLight = new PointLight(new Vec(3, [0.0, 30, -10.0]),
-      new Vec(1, [100.0], 0, new Vec(3, [1.0, 1.0, 1.0])))
-    @_pointLight.addToProgram @_areaShader
+    @_pLight1 = new PointLight(
+      new Vec(3, [0.0, 30, -10.0]),
+      new Vec(1, [50.0]),
+      0,
+      new Vec(3, [1.0, 1.0, 1.0]))
+    @_pLight2 = new PointLight(
+      new Vec(3, [10, 10, 0]),
+      new Vec(1, [30]),
+      1,
+      new Vec(3, [1.0, 1.0, 1.0]))
+    @_pLight1.addToProgram @_areaShader
+    @_pLight2.addToProgram @_areaShader
 
     attenu = 0.2
     @_attenuLight = new AttenuationLight new Vec(3, [attenu, attenu, attenu])
@@ -53,26 +62,29 @@ class window.Scene
     poly2.rotateAroundLine line2, Math.PI / n
 
     outlineCol = new Vec 3, [1.0, 1.0, 1.0]
-    areaCol = new Vec 3, [0.9, 0.9, 0.9]
+    debugCol = new Vec 3, [0.0, 1.0, 0.0]
     col1 = new Vec 3, [1, 0.2, 0.4]
 
     outlines = []
     areas = []
 
-    outlines = outlines.concat poly1.coloredOutline(outlineCol)
-    outlines = outlines.concat poly2.coloredOutline(outlineCol)
+    #outlines = outlines.concat poly1.coloredOutline(outlineCol)
+    #outlines = outlines.concat poly2.coloredOutline(outlineCol)
     #outlines = outlines.concat Polygon.lineconnectPolys poly1, poly2
 
-    areas = areas.concat poly1.coloredArea col1
-    areas = areas.concat poly2.coloredArea col1
+    areas = areas.concat poly1.coloredArea true, col1
+    areas = areas.concat poly2.coloredArea false, col1
     areas = areas.concat Polygon.triangleconnectPolys poly1, poly2, col1
 
     debuglines = []
     for p in areas
       debuglines = debuglines.concat(
-        p.centroidNormalLines(5, new Vec(3, [0.0, 1.0, 0.0])))
-
+        p.centroidNormalLines(5, debugCol))
     #outlines = outlines.concat debuglines
+
+    areas = areas.concat @_pLight1.cubeOnPosition()
+    areas = areas.concat @_pLight2.cubeOnPosition()
+    #outlines = outlines.concat @_pLight1.linesFromPosition(debugCol)
 
     outlineDS = new GeomData window.get_uid(), @_lineShader,
       outlines, GL.LINES

@@ -149,10 +149,11 @@ class window.Polygon
     return prims
 
   # only working for convex polygons
-  coloredArea: (color = new Vec(3, [1.0, 1.0, 1.0])) ->
+  coloredArea: (invnormal = false, color = new Vec(3, [1.0, 1.0, 1.0])) ->
     verts = []
     n = @points.length
     normal = Vec.surfaceNormal @points[0], @points[1], @points[2]
+    normal.multScalar(-1.0) if invnormal
     verts.push(new Vertex([@points[i], color, normal])) for i in [0..n-1]
     prims = []
     for i in [0..n-2]
@@ -213,3 +214,20 @@ class window.Polygon
           minInd1 = i
           minInd2 = j
     return [minInd1, minInd2]
+
+
+class window.PlatonicSolid
+
+  constructor: ->
+
+  @cubeAroundCenter: (@center, edgeLength, color) ->
+    ydir = new Vec 3, [0.0, 1.0, 0.0]
+    sideL = edgeLength / Math.sqrt(2)
+    line = new Line @center.addVecC(ydir.multScalarC(-edgeLength / 2.0)), ydir
+    poly1 = Polygon.regularFromLine line, 4, sideL
+    poly2 = Polygon.regularFromLine line.shiftBaseC(edgeLength), 4, sideL
+    prims = []
+    prims = prims.concat poly1.coloredArea true, color
+    prims = prims.concat poly2.coloredArea false, color
+    prims = prims.concat Polygon.triangleconnectPolys poly1, poly2, color
+    return prims
