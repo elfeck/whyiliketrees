@@ -8,7 +8,7 @@ class window.Line
   shiftBaseC: (dist) ->
     return new Line @pointAtDistance(dist), @dir.copy()
 
-  coloredLineSeg: (bdist, length, color = new Vec(3, [1.0, 1.0, 1.0])) ->
+  coloredLineSegC: (bdist, length, color = new Vec(3, [1.0, 1.0, 1.0])) ->
     verts = [
       new Vertex([@pointAtDistance(bdist).toHomVecC(), color]),
       new Vertex([@pointAtDistance(bdist + length).toHomVecC(), color])
@@ -26,9 +26,6 @@ class window.Line
     a = @base.data()[0]
     b = @base.data()[1]
     c = @base.data()[2]
-
-    #if rmat.data()[0] == 0
-      #console.log [a, b, c]
 
     rmat.data()[0] = u * u + (v * v + w * w) * cc
     rmat.data()[1] = u * v * ic + w * ss
@@ -78,7 +75,7 @@ class window.Line
   rotatePointC: (point, angle) ->
     return @rotatePoint point.copy(), point
 
-  @fromPoints: (p1, p2) ->
+  @fromPointsC: (p1, p2) ->
     return new Line p1.copy(), p2.subVecC(p1).normalize()
 
 class window.Plane
@@ -87,7 +84,7 @@ class window.Plane
     @norm = new Vec 3, unorm.data().slice()
     @norm.normalize()
 
-  coloredLineSegs: (dist1, dist2, color = new Vec(3, [1.0, 1.0, 1.0])) ->
+  coloredLineSegsC: (dist1, dist2, color = new Vec(3, [1.0, 1.0, 1.0])) ->
     dir1 = Vec.orthogonalVec(@norm).normalize()
     dir2 = Vec.crossProd3(@norm, dir1).normalize()
 
@@ -99,7 +96,7 @@ class window.Plane
 
     return [prim1, prim2]
 
-  coloredRect: (dist, angle, color = new Vec(3, [1.0, 1.0, 1.0])) ->
+  coloredRectC: (dist, angle, color = new Vec(3, [1.0, 1.0, 1.0])) ->
     dir1 = Vec.orthogonalVec(@norm).normalize()
     dir2 = Vec.crossProd3(@norm, dir1).normalize()
 
@@ -125,8 +122,6 @@ class window.Plane
 
     return [prim1, prim2]
 
-  coloredRegNGon: (n, cdist, color = new Vec(3, [1.0, 1.0, 1.0])) ->
-
   getPlaneParam: ->
     return @norm.data().concat -Vec.scalarProd(@norm, @base)
 
@@ -139,7 +134,7 @@ class window.Polygon
     rmat = line.getRotationMatrix angle
     p.multMat rmat for p in @points
 
-  coloredOutline: (color = new Vec(3, [1.0, 1.0, 1.0])) ->
+  coloredOutlineC: (color = new Vec(3, [1.0, 1.0, 1.0])) ->
     verts = []
     n = @points.length
     verts.push(new Vertex([@points[i], color])) for i in [0..n-1]
@@ -149,7 +144,7 @@ class window.Polygon
     return prims
 
   # only working for convex polygons
-  coloredArea: (invnormal = false, color = new Vec(3, [1.0, 1.0, 1.0])) ->
+  coloredAreaC: (invnormal = false, color = new Vec(3, [1.0, 1.0, 1.0])) ->
     verts = []
     n = @points.length
     normal = Vec.surfaceNormal @points[0], @points[1], @points[2]
@@ -170,7 +165,7 @@ class window.Polygon
       vecs.push vec.toHomVecC()
     return new Polygon vecs
 
-  @lineconnectPolys: (poly1, poly2, color = new Vec 3, [1.0, 1.0, 1.0]) ->
+  @lineconnectPolysC: (poly1, poly2, color = new Vec 3, [1.0, 1.0, 1.0]) ->
     minInd = @_minDistPairIndices poly1, poly2
     n = poly1.points.length
     prims = []
@@ -180,7 +175,8 @@ class window.Polygon
       prims.push new Primitive 2, [vert1, vert2]
     return prims
 
-  @triangleconnectPolys: (poly1, poly2, color = new Vec 3, [1.0, 1.0, 1.0]) ->
+  @triangleconnectPolysC: (poly1, poly2,
+                           color = new Vec 3, [1.0, 1.0, 1.0]) ->
     minInd = @_minDistPairIndices poly1, poly2
     n = poly1.points.length
     prims = []
@@ -227,7 +223,7 @@ class window.PlatonicSolid
     poly1 = Polygon.regularFromLine line, 4, sideL
     poly2 = Polygon.regularFromLine line.shiftBaseC(edgeLength), 4, sideL
     prims = []
-    prims = prims.concat poly1.coloredArea true, color
-    prims = prims.concat poly2.coloredArea false, color
-    prims = prims.concat Polygon.triangleconnectPolys poly1, poly2, color
+    prims = prims.concat poly1.coloredAreaC true, color
+    prims = prims.concat poly2.coloredAreaC false, color
+    prims = prims.concat Polygon.triangleconnectPolysC poly1, poly2, color
     return prims

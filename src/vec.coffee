@@ -1,8 +1,7 @@
 class window.Vec
 
-  constructor: (@dim, @_data = []) ->
-    if @_data.length == 0
-      @_data.push 0.0 for i in [1..dim] by 1
+  constructor: (@dim, @_data = [], @asHom = false) ->
+    (@_data.push 0.0 for i in [1..dim]) if @_data.length == 0
     @_mod = true
 
   copy: ->
@@ -30,7 +29,6 @@ class window.Vec
       window.dprint "Mismatched dim in vector add/sub"
     @_data[i] -= v.data()[i] for i in [0..@dim-1] by 1
     return this
-
 
   multVec: (v) ->
     @_mod = true
@@ -104,6 +102,7 @@ class window.Vec
     sum += data()[i] * v.data()[i] for i in [0..dim-1]
     return sum
 
+  # not caring about asHom right now!!
   asUniformGL: (loc) ->
     switch @_data.length
       when 1 then GL.uniform1f loc, @_data[0]
@@ -116,6 +115,7 @@ class window.Vec
 
   fetchVertexData: (vRaw) ->
     vRaw.push i for i in @_data
+    vRaw.push 1.0 if @dim == 3 and @asHom
     @_mod = false
     return
 

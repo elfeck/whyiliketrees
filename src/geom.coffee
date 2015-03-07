@@ -130,7 +130,7 @@ class window.Primitive
     prims = []
     for v in @vertices
       line = new Line v.data[0].stripHomC(), v.data[2].copy().normalize()
-      prims = prims.concat line.coloredLineSeg(0, length, color)
+      prims = prims.concat line.coloredLineSegC(0, length, color)
     return prims
 
   centroidNormalLines: (length, color) ->
@@ -141,7 +141,7 @@ class window.Primitive
       centroid.addVec v.data[0].stripHomC()
     line = new Line centroid.multScalar(1.0 / 3.0),
       @vertices[0].data[2].normalizeC()
-    return line.coloredLineSeg 0, length, color
+    return line.coloredLineSegC 0, length, color
 
 
 class window.Vertex

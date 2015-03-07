@@ -33,7 +33,7 @@ class window.Scene
     window.camera.addToProgram @_lineShader
     window.camera.addToProgram @_areaShader
 
-    @buildScene()
+    @buildSceneOld()
 
     @_entities = []
 
@@ -50,6 +50,9 @@ class window.Scene
     return
 
   buildScene: ->
+
+
+  buildSceneOld: ->
     line1 = new Line(new Vec(3, [0.0, 0.0, -5.0]),
       new Vec(3, [0.0, 0.0, 1.0]))
     line2 = new Line(new Vec(3, [0.0, 0, -15.0]),
@@ -72,9 +75,9 @@ class window.Scene
     #outlines = outlines.concat poly2.coloredOutline(outlineCol)
     #outlines = outlines.concat Polygon.lineconnectPolys poly1, poly2
 
-    areas = areas.concat poly1.coloredArea true, col1
-    areas = areas.concat poly2.coloredArea false, col1
-    areas = areas.concat Polygon.triangleconnectPolys poly1, poly2, col1
+    areas = areas.concat poly1.coloredAreaC true, col1
+    areas = areas.concat poly2.coloredAreaC false, col1
+    areas = areas.concat Polygon.triangleconnectPolysC poly1, poly2, col1
 
     debuglines = []
     for p in areas
