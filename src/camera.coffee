@@ -46,21 +46,21 @@ class window.Camera
 
   update: ->
     # update for the rotation axis
-    @_icameraPos.setData(@_cameraPos.data()).multScalar(-1.0)
+    @_icameraPos.setData(@_cameraPos.data).multScalar(-1.0)
 
-    @_lMat.data()[12] = @_cameraPos.data()[0]
-    @_lMat.data()[13] = @_cameraPos.data()[1]
-    @_lMat.data()[14] = @_cameraPos.data()[2]
+    @_lMat.data[12] = @_cameraPos.data[0]
+    @_lMat.data[13] = @_cameraPos.data[1]
+    @_lMat.data[14] = @_cameraPos.data[2]
 
     # rotating camera direction vector
     cc = Math.cos -@_viewRotAngle
     ss = Math.sin -@_viewRotAngle
     rm = new Mat 3, 3 # rotation around y-axis
     rm.toId()
-    rm.data()[0] = cc
-    rm.data()[2] = -ss
-    rm.data()[6] = ss
-    rm.data()[8] = cc
+    rm.data[0] = cc
+    rm.data[2] = -ss
+    rm.data[6] = ss
+    rm.data[8] = cc
 
     @_cameraDir.setData([0.0, 0.0, 1.0]) # rotate view vector
     @_cameraDir.multMat(rm)
@@ -95,9 +95,9 @@ class window.Camera
       @_cameraPos.addVec @_cameraDir.multScalarC(-@_speed * delta)
 
     if window.input.keyPressed(32) and not window.input.keyPressed(16)
-      @_cameraPos.data()[1] -= @_speed * delta
+      @_cameraPos.data[1] -= @_speed * delta
     if window.input.keyPressed(16) and window.input.keyPressed(32)
-      @_cameraPos.data()[1] += @_speed * delta
+      @_cameraPos.data[1] += @_speed * delta
 
     if not window.mouseActive
       if window.input.keyPressed 38 #up
@@ -139,9 +139,9 @@ class window.Camera
     return
 
   posToString: ->
-    x = -@_cameraPos.data()[0] + ""
-    y = -@_cameraPos.data()[1] + ""
-    z = -@_cameraPos.data()[2] + ""
+    x = -@_cameraPos.data[0] + ""
+    y = -@_cameraPos.data[1] + ""
+    z = -@_cameraPos.data[2] + ""
     a = (@_viewRotAngle %% 2 * Math.PI) / Math.PI + ""
     b = (@_xRotAngle %% 2 * Math.PI) / Math.PI + ""
     c = (@_yRotAngle %% 2 * Math.PI) / Math.PI + ""

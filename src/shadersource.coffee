@@ -1,6 +1,6 @@
-# #############
+# ###########
 # Line Shader
-# #############
+# ###########
 
 window.colLineVert = "
 #version 100\n
@@ -31,9 +31,9 @@ void main() {\n
 }\n
 "
 
-# #############
+# ###########
 # Area Shader
-# #############
+# ###########
 
 window.colAreaVert = "
 #version 100\n

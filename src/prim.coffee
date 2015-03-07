@@ -20,54 +20,54 @@ class window.Line
     cc = Math.cos angle
     ss = Math.sin angle
     ic = 1 - cc
-    u = @dir.data()[0]
-    v = @dir.data()[1]
-    w = @dir.data()[2]
-    a = @base.data()[0]
-    b = @base.data()[1]
-    c = @base.data()[2]
+    u = @dir.data[0]
+    v = @dir.data[1]
+    w = @dir.data[2]
+    a = @base.data[0]
+    b = @base.data[1]
+    c = @base.data[2]
 
-    rmat.data()[0] = u * u + (v * v + w * w) * cc
-    rmat.data()[1] = u * v * ic + w * ss
-    rmat.data()[2] = u * w * ic - v * ss
+    rmat.data[0] = u * u + (v * v + w * w) * cc
+    rmat.data[1] = u * v * ic + w * ss
+    rmat.data[2] = u * w * ic - v * ss
 
-    rmat.data()[4] = u * v * ic - w * ss
-    rmat.data()[5] = v * v + (u * u + w * w) * cc
-    rmat.data()[6] = v * w * ic + u * ss
+    rmat.data[4] = u * v * ic - w * ss
+    rmat.data[5] = v * v + (u * u + w * w) * cc
+    rmat.data[6] = v * w * ic + u * ss
 
-    rmat.data()[8] = u * w * ic + v * ss
-    rmat.data()[9] = v * w * ic - u * ss
-    rmat.data()[10] = w * w + (u * u + v * v) * cc
+    rmat.data[8] = u * w * ic + v * ss
+    rmat.data[9] = v * w * ic - u * ss
+    rmat.data[10] = w * w + (u * u + v * v) * cc
 
-    rmat.data()[12] = (a * (v * v + w * w) - u * (b * v + c * w)) * ic +
+    rmat.data[12] = (a * (v * v + w * w) - u * (b * v + c * w)) * ic +
       (b * w - c * v) * ss
-    rmat.data()[13] = (b * (u * u + w * w) - v * (a * u + c * w)) * ic +
+    rmat.data[13] = (b * (u * u + w * w) - v * (a * u + c * w)) * ic +
       (c * u - a * w) * ss
-    rmat.data()[14] = (c * (u * u + v * v) - w * (a * u + b * v)) * ic +
+    rmat.data[14] = (c * (u * u + v * v) - w * (a * u + b * v)) * ic +
       (a * v - b * u) * ss
-    rmat.data()[15] = 1.0
+    rmat.data[15] = 1.0
     return rmat
 
   rotatePoint: (point, angle) ->
     cc = Math.cos angle
     ss = Math.sin angle
     ic = 1 - cc
-    u = @dir.data()[0]
-    v = @dir.data()[1]
-    w = @dir.data()[2]
-    a = @base.data()[0]
-    b = @base.data()[1]
-    c = @base.data()[2]
-    x = point.data()[0]
-    y = point.data()[1]
-    z = point.data()[2]
-    point.data()[0] =
+    u = @dir.data[0]
+    v = @dir.data[1]
+    w = @dir.data[2]
+    a = @base.data[0]
+    b = @base.data[1]
+    c = @base.data[2]
+    x = point.data[0]
+    y = point.data[1]
+    z = point.data[2]
+    point.data[0] =
       (a * (v * v + w * w) - u * (b * v + c * w - u * x - v * y - w * z)) *
       ic + x * cc + (-c * v + b * w - w * y + v * z) * ss
-    point.data()[1] =
+    point.data[1] =
       (b * (u * u + w * w) - v * (a * u + c * w - u * x - v * y - w * z)) *
       ic + y * cc + (c * u - a * w + w * x - u * z) * ss
-    point.data()[2] =
+    point.data[2] =
       (c * (u * u + v * v) - w * (a * u + b * v - u * x - v * y - w * z)) *
       ic + z * cc + (-b * u + a * v - v * x + u * y) * ss
     return point
@@ -81,7 +81,7 @@ class window.Line
 class window.Plane
 
   constructor: (@base, unorm) ->
-    @norm = new Vec 3, unorm.data().slice()
+    @norm = new Vec 3, unorm.data.slice()
     @norm.normalize()
 
   coloredLineSegsC: (dist1, dist2, color = new Vec(3, [1.0, 1.0, 1.0])) ->
@@ -123,7 +123,7 @@ class window.Plane
     return [prim1, prim2]
 
   getPlaneParam: ->
-    return @norm.data().concat -Vec.scalarProd(@norm, @base)
+    return @norm.data.concat -Vec.scalarProd(@norm, @base)
 
 
 class window.Polygon

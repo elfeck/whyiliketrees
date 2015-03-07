@@ -57,3 +57,6 @@ window.getShaderAttributes = (vertSrc) ->
     lines[i] = lines[i].replace " ", ""
     lines[i] = lines[i].replace "\n", ""
   return lines
+
+window.arrayEqual = (a, b) ->
+  a.length is b.length and a.every (elem, i) -> elem is b[i]

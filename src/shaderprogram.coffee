@@ -4,7 +4,6 @@ class window.ShaderProgram
     @_vert = undefined
     @_frag = undefined
     @_program = undefined
-
     @_uniforms = []
 
   initGL: ->
@@ -37,6 +36,7 @@ class window.ShaderProgram
 
   bindGL: ->
     GL.useProgram @_program
+    return
 
   unbindGL: ->
     GL.useProgram null
@@ -44,8 +44,7 @@ class window.ShaderProgram
 
   uploadUniformsGL: (id) ->
     for uni in @_uniforms
-      if id == uni.id
-        uni.uniform.asUniformGL uni.location
+      uni.uniform.asUniformGL uni.location if id == uni.id
 
   addUniformGL: (id, name, uniform) ->
     uni =

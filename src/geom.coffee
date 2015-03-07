@@ -2,10 +2,9 @@ class window.Geom
 
   constructor: (@_layout) ->
     @_datasets = []
-
     @_vb = undefined
     @_ib = undefined
-
+    @_modified = false
     @_stride = 0
     @_stride += s for s in @_layout
 
@@ -29,7 +28,7 @@ class window.Geom
 
   uploadGL: ->
     GL.bindBuffer GL.ARRAY_BUFFER, @_vb
-    GL.bufferData GL.ARRAY_BUFFER, new Float32Array(@fetchVertexData()),
+    GL.bufferData GL.ARRAY_BUFFER, new Float32Array(@fetchAllVertexData()),
       GL.STATIC_DRAW
     GL.bindBuffer GL.ARRAY_BUFFER, null
 
@@ -37,24 +36,47 @@ class window.Geom
     GL.bufferData GL.ELEMENT_ARRAY_BUFFER, new Int16Array(@fetchIndexData()),
       GL.STATIC_DRAW
     GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, null
+    @_modified = false
     return
 
   updateGL: () ->
-    @uploadGL()
+    return if @_datasets.length == 0
+    if @_modified
+      @uploadGL()
+      return
+    minInd = @_datasets.length
+    maxInd = -1
+    for i in [0..@_datasets.length-1]
+      d = @_datasets[i]
+      if d.modified
+        minInd = Math.min(minInd, i)
+        maxInd = Math.max(maxInd, i)
+    if maxInd > -1
+      GL.bindBuffer GL.ARRAY_BUFFER, @_vb
+      GL.bufferSubData GL.ARRAY_BUFFER, @_datasets[minInd].vOffs * 4,
+        new Float32Array(@fetchModVertexData(minInd, maxInd))
+      GL.bindBuffer GL.ARRAY_BUFFER, null
+    d.modified = false for d in @_datasets
     return
 
   addData: (geomData) ->
+    @_modified = true
     @_datasets.push geomData
     iOffs = 0
     for ds in @_datasets
       ds.iOffs = iOffs
+      ds.vOffs = iOffs * @_stride
       iOffs += ds.getICount()
-    @uploadGL()
     return
 
-  fetchVertexData: ->
+  fetchAllVertexData: ->
     vRaw = []
     ds.fetchVertexData vRaw for ds in @_datasets
+    return vRaw
+
+  fetchModVertexData: (minInd, maxInd) ->
+    vRaw = []
+    @_datasets[i].fetchVertexData vRaw for i in [minInd..maxInd]
     return vRaw
 
   fetchIndexData: ->
@@ -64,6 +86,7 @@ class window.Geom
     return iRaw
 
   bindGL: ->
+    @uploadGL() if @_modified
     GL.bindBuffer GL.ARRAY_BUFFER, @_vb
     GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, @_ib
     GL.enableVertexAttribArray i for i in [0..@_layout.length-1]
@@ -93,15 +116,13 @@ class window.GeomData
 
   constructor: (@id, @program = undefined, @prims = [],
     @mode = GL.TRIANGLES, @visible = true) ->
-    @vOffs = 0
-    @iOffs = 0
+    @vOffs = 0 # in float-attrib entries (*4 to get to byte)
+    @iOffs = 0 # in short-attrib entries (*2 to get to byte)
+    @modified = false
 
   getICount: ->
     return 0 if @prims.length is 0
     return @prims.length * @prims[0].vCount
-
-  checkMod: ->
-
 
   fetchVertexData: (vRaw) ->
     p.fetchVertexData vRaw for p in @prims
