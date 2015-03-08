@@ -3,7 +3,7 @@ class window.Line
   constructor: (@base, @dir) ->
     @_lineSegs = []
 
-  gfxAddColLineSeg: (bdist, length, color) ->
+  gfxAddLineSeg: (bdist, length, color) ->
     p1 = @pointAtDistanceC(bdist).toHomVecC()
     p2 = @pointAtDistanceC(bdist + length).toHomVecC()
     lineSeg =
@@ -28,7 +28,7 @@ class window.Line
   shiftBaseC: (dist) ->
     return new Line @pointAtDistanceC(dist), @dir.copy()
 
-  coloredLineSegC: (bdist, length, color = new Vec(3, [1.0, 1.0, 1.0])) ->
+  getLineSegC: (bdist, length, color = new Vec(3, [1.0, 1.0, 1.0])) ->
     col = color.copy()
     verts = [
       new Vertex([@pointAtDistanceC(bdist).toHomVecC(), col]),
@@ -105,7 +105,7 @@ class window.Plane
     @norm = new Vec 3, unorm.data.slice()
     @norm.normalize()
 
-  coloredLineSegsC: (dist1, dist2, color = new Vec(3, [1.0, 1.0, 1.0])) ->
+  getLineSegsC: (dist1, dist2, color = new Vec(3, [1.0, 1.0, 1.0])) ->
     col = color.copy()
     dir1 = Vec.orthogonalVec(@norm).normalize()
     dir2 = Vec.crossProd3(@norm, dir1).normalize()
@@ -118,7 +118,7 @@ class window.Plane
 
     return [prim1, prim2]
 
-  coloredRectC: (dist, angle, color = new Vec(3, [1.0, 1.0, 1.0])) ->
+  getFillC: (dist, angle, color = new Vec(3, [1.0, 1.0, 1.0])) ->
     col = color.copy()
     dir1 = Vec.orthogonalVec(@norm).normalize()
     dir2 = Vec.crossProd3(@norm, dir1).normalize()
@@ -152,19 +152,33 @@ class window.Plane
 class window.Polygon
 
   constructor: (@points) ->
+    @_outlines = []
+    @_fills = []
 
-  gfxAddColOutline: (color) ->
-    col = color.copy()
-    verts = []
+  gfxAddOutline: (color) ->
     n = @points.length
-    verts.push(new Vertex([@points[i], col])) for i in [0..n-1]
+    @_outlines.push @points
+    verts = []
+    verts.push(new Vertex([@points[i], color])) for i in [0..n-1]
     prims = []
     prims.push(new Primitive 2, [verts[i], verts[i + 1]]) for i in [0..n-2]
     prims.push(new Primitive 2, [verts[n - 1], verts[0]])
     return prims
 
-  gfxAddColArea: (color) ->
-    #TODO
+  gfxAddFill: (color, invnormal = false) ->
+    n = @points.length
+    normal = Vec.surfaceNormal @points[0], @points[1], @points[2]
+    normal.multScalar(-1.0) if invnormal
+    fill =
+      points: @points
+      normal: normal
+    @_fills.push fill
+    verts = []
+    verts.push(new Vertex([@points[i], color, normal])) for i in [0..n-1]
+    prims = []
+    for i in [0..n-2]
+      prims.push(new Primitive 3, [verts[0], verts[i], verts[i + 1]])
+    return prims
 
   gfxUpdate: ->
     return
@@ -174,7 +188,7 @@ class window.Polygon
     p.multMat rmat for p in @points
     return
 
-  coloredOutlineC: (color = new Vec(3, [1.0, 1.0, 1.0])) ->
+  getOutlineC: (color = new Vec(3, [1.0, 1.0, 1.0])) ->
     col = color.copy()
     verts = []
     n = @points.length
@@ -185,13 +199,13 @@ class window.Polygon
     return prims
 
   # only working for convex polygons
-  coloredAreaC: (invnormal = false, color = new Vec(3, [1.0, 1.0, 1.0])) ->
+  getFillC: (invnormal = false, color = new Vec(3, [1.0, 1.0, 1.0])) ->
     col = color.copy()
     verts = []
     n = @points.length
     normal = Vec.surfaceNormal @points[0], @points[1], @points[2]
     normal.multScalar(-1.0) if invnormal
-    verts.push(new Vertex([@points[i], col, normal])) for i in [0..n-1]
+    verts.push(new Vertex([@points[i].copy(), col, normal])) for i in [0..n-1]
     prims = []
     for i in [0..n-2]
       prims.push(new Primitive 3, [verts[0], verts[i], verts[i + 1]])
@@ -207,7 +221,8 @@ class window.Polygon
       vecs.push vec.toHomVecC()
     return new Polygon vecs
 
-  @lineconnectPolysC: (poly1, poly2, color = new Vec 3, [1.0, 1.0, 1.0]) ->
+  @getOutlineConnectionC: (poly1, poly2,
+                           color = new Vec 3, [1.0, 1.0, 1.0]) ->
     col = color.copy()
     minInd = @_minDistPairIndices poly1, poly2
     n = poly1.points.length
@@ -218,8 +233,7 @@ class window.Polygon
       prims.push new Primitive 2, [vert1, vert2]
     return prims
 
-  @triangleconnectPolysC: (poly1, poly2,
-                           color = new Vec 3, [1.0, 1.0, 1.0]) ->
+  @getFillConnectionC: (poly1, poly2, color = new Vec 3, [1.0, 1.0, 1.0]) ->
     col = color.copy()
     minInd = @_minDistPairIndices poly1, poly2
     n = poly1.points.length
@@ -241,6 +255,10 @@ class window.Polygon
       prims.push new Primitive 3, verts2
     return prims
 
+  @connect: (poly1, poly2) ->
+    # TODO
+    return
+
   @_minDistPairIndices: (poly1, poly2) ->
     n = poly1.points.length
     m = poly2.points.length
@@ -261,7 +279,7 @@ class window.PlatonicSolid
   constructor: ->
 
   @cubeAroundCenterC: (@center, edgeLength,
-                      color = new Vec(3, [1.0, 1.0, 1.0])) ->
+                       color = new Vec(3, [1.0, 1.0, 1.0])) ->
     col = color.copy()
     ydir = new Vec 3, [0.0, 1.0, 0.0]
     sideL = edgeLength / Math.sqrt(2)
@@ -269,7 +287,7 @@ class window.PlatonicSolid
     poly1 = Polygon.regularFromLine line, 4, sideL
     poly2 = Polygon.regularFromLine line.shiftBaseC(edgeLength), 4, sideL
     prims = []
-    prims = prims.concat poly1.coloredAreaC true, col
-    prims = prims.concat poly2.coloredAreaC false, col
+    prims = prims.concat poly1.coloredFillC true, col
+    prims = prims.concat poly2.coloredFillC false, col
     prims = prims.concat Polygon.triangleconnectPolysC poly1, poly2, col
     return prims

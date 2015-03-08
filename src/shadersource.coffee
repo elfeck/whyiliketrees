@@ -35,7 +35,7 @@ void main() {\n
 # Area Shader
 # ###########
 
-window.colAreaVert = "
+window.colFillVert = "
 #version 100\n
 precision mediump float;\n
 
@@ -59,7 +59,7 @@ void main() {\n
 }\n
 "
 
-window.colAreaFrag = "
+window.colFillFrag = "
 #version 100\n
 precision mediump float;\n
 
