@@ -1,6 +1,31 @@
-whyiliketrees
-
+WHYILIKETREES
 (*) why i do like trees
 (*) no I do not know what this is
 (*) not quite recent versions might be hosted on
     elfeck.com/games/whyiliketrees/index.html but no guarantee
+
+
+TODO
+(*) create primitive-dependent graphics representation of stuff
+(*) n != m polygon conncetions
+(*) point polygon connections
+
+(*) particles
+
+
+NOTES
+(*) appended C on a function name means this function creates copies of working
+    primitives / vecs instead of using by-reference, thus creating independent
+    new objects which will not be affected by any change but to themself
+
+    e.g.: (*) v1.addVecC v2 returns a new Vec = (v1 + v2)
+	  (*) line.coloredLineSegC [..] returns a line segement which is
+	      independent of the line itself
+
+(*) vec.asHom is intended for 3-dim vectors to be interpreted as (v, 1.0) in
+    homogeneous coord. space and should only be used if neccessary
+
+    e.g.: graphical interpretation of a polygon, defined as list of 3-dim
+    	  vectors, which should change in accordance to a change of the
+	  polygon itself, requires polygon-vec and graphics-vec to be the
+	  same, hence this

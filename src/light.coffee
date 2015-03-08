@@ -21,7 +21,7 @@ class window.PointLight
     return
 
   cubeOnPosition: (size = 2, color = @lightInt) ->
-    return PlatonicSolid.cubeAroundCenter @lightPos, size, color
+    return PlatonicSolid.cubeAroundCenterC @lightPos, size, color
 
   linesFromPosition: (color, num = 3) ->
     dirs = [
@@ -32,11 +32,11 @@ class window.PointLight
       new Vec(3, [0.0, -1.0, 1.0])
     ]
     num = Math.min(dirs.length, num)
-    l = @lightAtt.data()[0]
+    l = @lightAtt.data[0]
     prims = []
     for i in [1..num]
       line = new Line @lightPos, dirs[i - 1].normalize()
-      prims = prims.concat line.coloredLineSeg(-l, l * 2.0, color)
+      prims = prims.concat line.coloredLineSegC(-l, l * 2.0, color)
 
     return prims
 

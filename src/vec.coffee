@@ -10,6 +10,11 @@ class window.Vec
     @data = data.slice()
     return this
 
+  setTo: (vec) ->
+    @data = vec.data.slice()
+    @dim = vec.dim
+    return this
+
   addVec: (v) ->
     if v.dim != @dim
       window.dprint "Mismatched dim in vector add " + @dim + " vs " + v.dim
@@ -55,6 +60,14 @@ class window.Vec
 
   distance: (v) ->
     return v.subVecC(this).length()
+
+  toHomVec: ->
+    if @dim < 2 or @dim > 4
+      window.dprint "toHomVecC invalid dim"
+      return undefined
+    @data.push 0.0 if @dim <= 2
+    @data.push 1.0 if @dim <= 3
+    return this
 
   toHomVecC: ->
     if @dim < 2 or @dim > 4
