@@ -5,6 +5,9 @@ window.get_uid = ->
 
 window._knownLines = []
 
+window.isFloatZero = (f) ->
+  return Math.abs(f) < 0.000001
+
 window.dprint = (msg) ->
   if not (msg in window._knownLines)
     time = new Date()

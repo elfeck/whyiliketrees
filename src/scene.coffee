@@ -90,6 +90,8 @@ class window.Scene
     prims = @poly2.gfxAddFill @color2
     @ds5 = new GeomData get_uid(), @_lineShader, prims, GL.TRIANGLES
 
+    Polygon.connect @poly1, @poly2
+
     #@_lineGeom.addData @ds1
     @_lineGeom.addData @ds2
     @_lineGeom.addData @ds3

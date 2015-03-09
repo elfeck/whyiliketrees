@@ -1,6 +1,6 @@
 class window.Vec
 
-  constructor: (@dim, @data = []) ->
+  constructor: (@dim, @data = [], @asHom = false) ->
     (@data.push 0.0 for i in [1..dim]) if @data.length == 0
 
   copy: ->
@@ -96,10 +96,10 @@ class window.Vec
     return new Vec 3, newdata
 
   scalarProd: (v) ->
-    if not dim is v.dim
+    if not @dim is v.dim
       window.dprint "Invalid vector dims for scalarProd"
     sum = 0
-    sum += data()[i] * v.data[i] for i in [0..dim-1]
+    sum += @data[i] * v.data[i] for i in [0..@dim-1]
     return sum
 
   asUniformGL: (loc) ->
@@ -113,6 +113,7 @@ class window.Vec
 
   fetchVertexData: (vRaw) ->
     vRaw.push i for i in @data
+    vRaw.push 1.0 if @asHom
     return
 
   # utility methods

@@ -102,8 +102,7 @@ class window.Line
 class window.Plane
 
   constructor: (@base, unorm) ->
-    @norm = new Vec 3, unorm.data.slice()
-    @norm.normalize()
+    @norm = unorm.copy().normalize()
 
   getLineSegsC: (dist1, dist2, color = new Vec(3, [1.0, 1.0, 1.0])) ->
     col = color.copy()
@@ -146,8 +145,16 @@ class window.Plane
     return [prim1, prim2]
 
   getPlaneParam: ->
-    return @norm.data.concat -Vec.scalarProd(@norm, @base)
+    return -Vec.scalarProd(@norm, @base)
 
+  liesOnPlane: (point) ->
+    diff = Vec.scalarProd(point, @norm) + @getPlaneParam()
+    return isFloatZero diff
+
+  @fromPoints: (points) ->
+    v1 = points[1].subVecC points[0]
+    v2 = points[2].subVecC points[0]
+    return new Plane points[0].copy(), Vec.crossProd3(v1, v2)
 
 class window.Polygon
 
@@ -184,8 +191,7 @@ class window.Polygon
     return
 
   rotateAroundLine: (line, angle) ->
-    rmat = line.getRotationMatrix angle
-    p.multMat rmat for p in @points
+    line.rotatePoint p, angle for p in @points
     return
 
   getOutlineC: (color = new Vec(3, [1.0, 1.0, 1.0])) ->
@@ -218,7 +224,8 @@ class window.Polygon
     for i in [0..n-1]
       vec = line.base.addVecC(dir.multScalarC cdist)
       line.rotatePoint vec, angle * i
-      vecs.push vec.toHomVecC()
+      vec.asHom = true
+      vecs.push vec
     return new Polygon vecs
 
   @getOutlineConnectionC: (poly1, poly2,
@@ -256,7 +263,20 @@ class window.Polygon
     return prims
 
   @connect: (poly1, poly2) ->
-    # TODO
+    minInd = @_minDistPairIndices poly1, poly2
+    p1s = poly1.points
+    p2s = poly2.points
+    n = p1s.length
+    for i in [0..n-1]
+      ind1 = [(minInd[0] + i) %% n, (minInd[0] + i + 1) %% n]
+      ind2 = [(minInd[1] + i) %% n, (minInd[1] + i + 1) %% n]
+      plane = Plane.fromPoints [p1s[ind1[0]], p1s[ind1[1]], p2s[ind2[0]]]
+      if plane.liesOnPlane p2s[ind2[1]]
+        console.log "4-gon"
+        # 4-gon
+      else
+        console.log "3-gon"
+        # 3-gon
     return
 
   @_minDistPairIndices: (poly1, poly2) ->
