@@ -15,7 +15,7 @@ class window.Line
     prim = new Primitive 2, verts
     return [prim]
 
-  gfxUpdate: () ->
+  updateLineSegs: () ->
     for ls in @_lineSegs
       ls.points[0].setTo(@base).addVec(@dir.multScalarC(ls.bdist)).toHomVec()
       ls.points[1].setTo(@base).addVec(@dir.multScalarC(ls.bdist + ls.length))
@@ -27,6 +27,16 @@ class window.Line
 
   shiftBaseC: (dist) ->
     return new Line @pointAtDistanceC(dist), @dir.copy()
+
+  setBase: (newBase) ->
+    @base.setTo newBase
+    @updateLineSegs()
+    return
+
+  setDir: (newDir) ->
+    @dir.setTo newDir
+    @updateLineSegs()
+    return
 
   getLineSegC: (bdist, length, color = new Vec(3, [1.0, 1.0, 1.0])) ->
     col = color.copy()
@@ -99,6 +109,7 @@ class window.Line
   @fromPoints: (p1, p2) ->
     return new Line p1.copy(), p2.subVecC(p1).normalize()
 
+
 class window.Plane
 
   constructor: (@base, unorm) ->
@@ -155,143 +166,6 @@ class window.Plane
     v1 = points[1].subVecC points[0]
     v2 = points[2].subVecC points[0]
     return new Plane points[0].copy(), Vec.crossProd3(v1, v2)
-
-class window.Polygon
-
-  constructor: (@points) ->
-    @_outlines = []
-    @_fills = []
-
-  gfxAddOutline: (color) ->
-    n = @points.length
-    @_outlines.push @points
-    verts = []
-    verts.push(new Vertex([@points[i], color])) for i in [0..n-1]
-    prims = []
-    prims.push(new Primitive 2, [verts[i], verts[i + 1]]) for i in [0..n-2]
-    prims.push(new Primitive 2, [verts[n - 1], verts[0]])
-    return prims
-
-  gfxAddFill: (color, invnormal = false) ->
-    n = @points.length
-    normal = Vec.surfaceNormal @points[0], @points[1], @points[2]
-    normal.multScalar(-1.0) if invnormal
-    fill =
-      points: @points
-      normal: normal
-    @_fills.push fill
-    verts = []
-    verts.push(new Vertex([@points[i], color, normal])) for i in [0..n-1]
-    prims = []
-    for i in [0..n-2]
-      prims.push(new Primitive 3, [verts[0], verts[i], verts[i + 1]])
-    return prims
-
-  gfxUpdate: ->
-    return
-
-  rotateAroundLine: (line, angle) ->
-    line.rotatePoint p, angle for p in @points
-    return
-
-  getOutlineC: (color = new Vec(3, [1.0, 1.0, 1.0])) ->
-    col = color.copy()
-    verts = []
-    n = @points.length
-    verts.push(new Vertex([@points[i].copy(), col])) for i in [0..n-1]
-    prims = []
-    prims.push(new Primitive 2, [verts[i], verts[i + 1]]) for i in [0..n-2]
-    prims.push(new Primitive 2, [verts[n - 1], verts[0]])
-    return prims
-
-  # only working for convex polygons
-  getFillC: (invnormal = false, color = new Vec(3, [1.0, 1.0, 1.0])) ->
-    col = color.copy()
-    verts = []
-    n = @points.length
-    normal = Vec.surfaceNormal @points[0], @points[1], @points[2]
-    normal.multScalar(-1.0) if invnormal
-    verts.push(new Vertex([@points[i].copy(), col, normal])) for i in [0..n-1]
-    prims = []
-    for i in [0..n-2]
-      prims.push(new Primitive 3, [verts[0], verts[i], verts[i + 1]])
-    return prims
-
-  @regularFromLine: (line, n, cdist) ->
-    angle = 2.0 * Math.PI / n
-    vecs = []
-    dir = Vec.orthogonalVec(line.dir).normalize()
-    for i in [0..n-1]
-      vec = line.base.addVecC(dir.multScalarC cdist)
-      line.rotatePoint vec, angle * i
-      vec.asHom = true
-      vecs.push vec
-    return new Polygon vecs
-
-  @getOutlineConnectionC: (poly1, poly2,
-                           color = new Vec 3, [1.0, 1.0, 1.0]) ->
-    col = color.copy()
-    minInd = @_minDistPairIndices poly1, poly2
-    n = poly1.points.length
-    prims = []
-    for i in [0..n-1]
-      vert1 = new Vertex [poly1.points[(i + minInd[0]) %% n], col]
-      vert2 = new Vertex [poly2.points[(i + minInd[1]) %% n], col]
-      prims.push new Primitive 2, [vert1, vert2]
-    return prims
-
-  @getFillConnectionC: (poly1, poly2, color = new Vec 3, [1.0, 1.0, 1.0]) ->
-    col = color.copy()
-    minInd = @_minDistPairIndices poly1, poly2
-    n = poly1.points.length
-    prims = []
-    for i in [0..n-1]
-      vecs = [
-        poly1.points[(i + minInd[0]) %% n],
-        poly2.points[(i + minInd[1]) %% n],
-        poly1.points[(i + 1 + minInd[0]) %% n],
-        poly2.points[(i + 1 + minInd[1]) %% n]
-      ]
-      normal1 = Vec.surfaceNormal vecs[2], vecs[1], vecs[0]
-      normal2 = Vec.surfaceNormal vecs[1], vecs[2], vecs[3]
-      verts1 = []
-      verts2 = []
-      verts1.push new Vertex [vecs[i], col, normal1] for i in [0..2]
-      verts2.push new Vertex [vecs[i], col, normal2] for i in [1..3]
-      prims.push new Primitive 3, verts1
-      prims.push new Primitive 3, verts2
-    return prims
-
-  @connect: (poly1, poly2) ->
-    minInd = @_minDistPairIndices poly1, poly2
-    p1s = poly1.points
-    p2s = poly2.points
-    n = p1s.length
-    for i in [0..n-1]
-      ind1 = [(minInd[0] + i) %% n, (minInd[0] + i + 1) %% n]
-      ind2 = [(minInd[1] + i) %% n, (minInd[1] + i + 1) %% n]
-      plane = Plane.fromPoints [p1s[ind1[0]], p1s[ind1[1]], p2s[ind2[0]]]
-      if plane.liesOnPlane p2s[ind2[1]]
-        console.log "4-gon"
-        # 4-gon
-      else
-        console.log "3-gon"
-        # 3-gon
-    return
-
-  @_minDistPairIndices: (poly1, poly2) ->
-    n = poly1.points.length
-    m = poly2.points.length
-    mindist = 1000000
-    minInd1 = undefined
-    minInd2 = undefined
-    for i in [0..n-1]
-      for j in [0..m-1]
-        if mindist > (d = poly1.points[i].distance(poly2.points[j]))
-          mindist = d
-          minInd1 = i
-          minInd2 = j
-    return [minInd1, minInd2]
 
 
 class window.PlatonicSolid

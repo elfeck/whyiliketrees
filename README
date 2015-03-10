@@ -8,9 +8,9 @@ WHYILIKETREES
 
 
 ===============================================================================
-TODO
+UPCOMING TODO
 ===============================================================================
-(*) Polygon.connect for n = m poylgons
+(*) non-regular, convex polygons
 (*) n != m polygon conncetions
 (*) point polygon connections
 
@@ -25,3 +25,9 @@ NOTES
     e.g.: (*) v1.addVecC v2 returns a new Vec = (v1 + v2)
 	  (*) line.getLineSegC [..] returns a line segement which is
 	      independent of the line itself
+
+(*) vec.asHom is intended to be used of math primitives, which have a gfx
+    (dependent) representation. asHom allows homogeneous coordinates which
+    having convinient 3-dim vectors for math calculations
+
+    e.g.: (*) Polygon.points

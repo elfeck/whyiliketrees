@@ -48,52 +48,43 @@ class window.Scene
   delegateDoLogic: (delta) ->
     accTime += delta
 
-    @line.dir.data[0] = Math.sin(Math.PI * accTime * 0.0001)
-    @line.dir.data[1] = Math.cos(Math.PI * accTime * 0.0001)
-    @line.gfxUpdate()
-    @ds1.setModified()
-
     @poly1.rotateAroundLine @pline1, Math.PI * delta * 0.0001
-    @poly1.gfxUpdate()
-    @ds2.setModified()
-
     @poly2.rotateAroundLine @pline1, Math.PI * delta * 0.0001
-    @poly2.gfxUpdate()
-    @ds3.setModified()
+
     @ds4.setModified()
     @ds5.setModified()
+    @ds6.setModified()
     return
 
   buildScene: ->
-    @color1 = new Vec 3, [0.4, 0.8, 0.2]
-    @color2 = new Vec 3, [0.8, 0.2, 0.4]
-    @line = new Line(new Vec(3, [0.0, 0.0, -5]), new Vec(3, [0.0, 1.0, 0.0]))
-    prims = @line.gfxAddLineSeg 1, 10, @color1
-    prims = prims.concat @line.gfxAddLineSeg -1, -10, @color1
-    @ds1 = new GeomData get_uid(), @_lineShader, prims, GL.LINES
+    @color2 = new Vec 3, [1.0, 0.3, 0.3]
 
     @pline1 = new Line(
       new Vec(3, [0.0, 0.0, -4]),
       new Vec(3, [0.0, 0.0, 1.0]))
-    @poly1 = Polygon.regularFromLine @pline1, 6, 5
-    prims = @poly1.gfxAddOutline @color1
-    @ds2 = new GeomData get_uid(), @_lineShader, prims, GL.LINES
+    @poly1 = Polygon.regularFromLine @pline1, 2, 7
 
-    prims = @poly1.gfxAddFill @color1
-    @ds4 = new GeomData get_uid(), @_lineShader, prims, GL.TRIANGLES
+    prims = @poly1.gfxAddFill @color2
+    @ds4 = new GeomData get_uid(), @_fillShader, prims, GL.TRIANGLES
 
     @pline2 = @pline1.shiftBaseC -5
-    @poly2 = Polygon.regularFromLine @pline2, 6, 5
-    prims = @poly2.gfxAddOutline @color2
-    @ds3 = new GeomData get_uid(), @_lineShader, prims, GL.LINES
+    @poly2 = Polygon.convexFromLine @pline2, 5, [
+       0,
+       Math.PI * 2 / 7.0,
+       Math.PI * 2 / 7.0,
+       Math.PI * 2 / 7.0,
+       Math.PI * 2 / 7.0,
+       Math.PI * 2 / 7.0,
+       Math.PI * 2 / 7.0]
 
     prims = @poly2.gfxAddFill @color2
-    @ds5 = new GeomData get_uid(), @_lineShader, prims, GL.TRIANGLES
+    @ds5 = new GeomData get_uid(), @_fillShader, prims, GL.TRIANGLES
 
-    Polygon.connect @poly1, @poly2
+    @polys = Polygon.connectPTP @poly1, @poly2
+    prims = []
+    prims = prims.concat p.gfxAddFill @color2 for p in @polys
+    @ds6 = new GeomData get_uid(), @_fillShader, prims, GL.TRIANGLES
 
-    #@_lineGeom.addData @ds1
-    @_lineGeom.addData @ds2
-    @_lineGeom.addData @ds3
     @_fillGeom.addData @ds4
     @_fillGeom.addData @ds5
+    @_fillGeom.addData @ds6
