@@ -51,9 +51,10 @@ class window.Line
     cc = Math.cos angle
     ss = Math.sin angle
     ic = 1 - cc
-    u = @dir.data[0]
-    v = @dir.data[1]
-    w = @dir.data[2]
+    dir = @dir.normalizeC()
+    u = dir.data[0]
+    v = dir.data[1]
+    w = dir.data[2]
     a = @base.data[0]
     b = @base.data[1]
     c = @base.data[2]
@@ -83,9 +84,10 @@ class window.Line
     cc = Math.cos angle
     ss = Math.sin angle
     ic = 1 - cc
-    u = @dir.data[0]
-    v = @dir.data[1]
-    w = @dir.data[2]
+    dir = @dir.normalize()
+    u = dir.data[0]
+    v = dir.data[1]
+    w = dir.data[2]
     a = @base.data[0]
     b = @base.data[1]
     c = @base.data[2]

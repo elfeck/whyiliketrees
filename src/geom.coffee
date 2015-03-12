@@ -110,11 +110,6 @@ class window.Geom
     return
 
 
-
-# #################
-# Container classes
-# #################
-
 class window.GeomData
 
   constructor: (@id, @program = undefined, @prims = [],
@@ -151,16 +146,17 @@ class window.Primitive
     iRaw.push(i + offs) for i in [0..@vCount-1] by 1
     return offs + @vCount
 
-  vertexNormalLines: (length, color) ->
+  vertexNormalLinesDebug: (length = 2, color = new Vec(3, [0.0, 1.0, 0.0])) ->
     if @vCount is not 3
       window.dprint "No triangle, no normal"
     prims = []
     for v in @vertices
-      line = new Line v.data[0].stripHomC(), v.data[2].copy().normalize()
-      prims = prims.concat line.coloredLineSegC(0, length, color)
+      line = new Line v.data[0].stripHomC(), v.data[2].normalizeC()
+      prims = prims.concat line.getLineSegC 0, length, color
     return prims
 
-  centroidNormalLines: (length, color) ->
+  centroidNormalLinesDebug: (length = 2,
+                             color = new Vec 3, [0.0, 1.0, 0.0]) ->
     if @vCount is not 3
       window.dprint "No triangle, no normal"
     centroid = new Vec 3
@@ -168,7 +164,7 @@ class window.Primitive
       centroid.addVec v.data[0].stripHomC()
     line = new Line centroid.multScalar(1.0 / 3.0),
       @vertices[0].data[2].normalizeC()
-    return line.coloredLineSegC 0, length, color
+    return line.getLineSegC 0, length, color
 
 
 class window.Vertex

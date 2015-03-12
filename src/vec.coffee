@@ -4,7 +4,7 @@ class window.Vec
     (@data.push 0.0 for i in [1..dim]) if @data.length == 0
 
   copy: ->
-    return new Vec @dim, @data.slice()
+    return new Vec @dim, @data.slice(), @asHom
 
   setData: (data) ->
     @data = data.slice()
@@ -38,7 +38,7 @@ class window.Vec
     return this
 
   multMat: (m) ->
-    if m.dimX is not @dim
+    if m.dimX != @dim
       window.dprint "Mismatched dim in vector-mat mult"
     newdata = []
     newdata.push 0.0 for i in [1..@dim] by 1
@@ -62,16 +62,16 @@ class window.Vec
     return v.subVecC(this).length()
 
   toHomVec: ->
-    if @dim < 2 or @dim > 4
-      window.dprint "toHomVecC invalid dim"
+    if @dim < 2 or @dim > 4 or @asHom
+      window.dprint "toHomVecC invalid dim / asHom"
       return undefined
     @data.push 0.0 if @dim <= 2
     @data.push 1.0 if @dim <= 3
     return this
 
   toHomVecC: ->
-    if @dim < 2 or @dim > 4
-      window.dprint "toHomVecC invalid dim"
+    if @dim < 2 or @dim > 4 or @asHom
+      window.dprint "toHomVecC invalid dim / asHom"
       return undefined
     newdata = @data.slice()
     newdata.push 0.0 if @dim <= 2
@@ -79,7 +79,7 @@ class window.Vec
     return new Vec(4, newdata)
 
   fromHomVecC: ->
-    if @dim is not 4
+    if @dim != 4 and !@asHom
       window.dprint "fromHomVecC invalid dim"
       return undefined
     newdata = []
@@ -88,7 +88,7 @@ class window.Vec
     return vec.multScalar(1.0 / @data[3])
 
   stripHomC: ->
-    if @dim is not 4
+    if @dim != 4 and !@asHom
       window.dprint "stripHomC invalid dim"
       return undefined
     newdata = []
@@ -154,7 +154,7 @@ class window.Vec
       u.data[2] * v.data[0] - u.data[0] * v.data[2],
       u.data[0] * v.data[1] - u.data[1] * v.data[0]
     ]
-    return n
+    return n.normalize()
 
   @orthogonalVec: (v) ->
     for i in [0..v.dim-1]

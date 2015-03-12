@@ -33,7 +33,7 @@ class window.Scene
     window.camera.addToProgram @_lineShader
     window.camera.addToProgram @_fillShader
 
-    @buildScene()
+    @buildScene1()
 
     @_entities = []
 
@@ -51,35 +51,41 @@ class window.Scene
     @poly1.rotateAroundLine @pline1, Math.PI * delta * 0.0001
     @poly2.rotateAroundLine @pline1, Math.PI * delta * 0.0001
 
-    @ds4.setModified()
-    @ds5.setModified()
-    @ds6.setModified()
+    #@ds4.setModified()
+    #@ds5.setModified()
+    #@ds6.setModified()
     return
 
-  buildScene: ->
+  buildScene1: ->
     @color2 = new Vec 3, [1.0, 0.3, 0.3]
 
     @pline1 = new Line(
       new Vec(3, [0.0, 0.0, -4]),
       new Vec(3, [0.0, 0.0, 1.0]))
-    @poly1 = Polygon.regularFromLine @pline1, 2, 5
+    @poly1 = Polygon.regularFromLine @pline1, 2, 4, -1.0
 
     prims = @poly1.gfxAddFill @color2
     @ds4 = new GeomData get_uid(), @_fillShader, prims, GL.TRIANGLES
 
     @pline2 = @pline1.shiftBaseC -5
-    #@pline2.setDir new Vec 3, [0.4, 0.0, 1.0]
+    ndir = new Vec(3, [0.5, 0.3, 1.0])
+    @pline2.setDir ndir.normalize()
     @poly2 = Polygon.regularFromLine @pline2, 2, 5
-    @poly2.rotateAroundLine @pline1, Math.PI
+    @poly2.rotateAroundLine @pline2, Math.PI
 
     prims = @poly2.gfxAddFill @color2
     @ds5 = new GeomData get_uid(), @_fillShader, prims, GL.TRIANGLES
 
-    @polys = Polygon.connectEquiDist @poly1, @poly2
+    @polys = Polygon.connectMinDist @poly1, @poly2
     #@polys = Polygon.connectPTP @poly1, @poly2
     prims = []
     prims = prims.concat p.gfxAddFill @color2 for p in @polys
     @ds6 = new GeomData get_uid(), @_fillShader, prims, GL.TRIANGLES
+
+    lprims = []
+    lprims = lprims.concat p.centroidNormalLinesDebug() for p in prims
+    dds = new GeomData get_uid(), @_lineShader, lprims, GL.LINES
+    @_lineGeom.addData dds
 
     @_fillGeom.addData @ds4
     @_fillGeom.addData @ds5

@@ -34,6 +34,21 @@ class window.Polygon
     poly.updateNormal() for poly in conn.polys for conn in @connections
     return
 
+  translatePoints: (dir) ->
+    p.addVec dir for p in @points
+    return
+
+  getCentroid: () ->
+    c = new Vec 3
+    c.addVec p for p in @points
+    return c.multScalar(1.0 / @points.length)
+
+  getCentroidAxis: (length, color) ->
+    return new Line @getCentroid(), @normal.copy()
+
+  getCentroidAxisDebug: (length, color) ->
+    return @getCentroidAxis().getLineSegC 0, length, color
+
   getOutlineC: (color = new Vec(3, [1.0, 1.0, 1.0])) ->
     col = color.copy()
     verts = []
@@ -57,7 +72,7 @@ class window.Polygon
       prims.push(new Primitive 3, [verts[0], verts[i], verts[i + 1]])
     return prims
 
-  @regularFromLine: (line, cdist, n) ->
+  @regularFromLine: (line, cdist, n, normSign = 1.0) ->
     angle = 2.0 * Math.PI / n
     vecs = []
     dir = Vec.orthogonalVec(line.dir).normalize()
@@ -66,7 +81,7 @@ class window.Polygon
       line.rotatePoint vec, angle * i
       vec.asHom = true
       vecs.push vec
-    return new Polygon vecs
+    return new Polygon vecs, normSign
 
   @convexFromLine: (line, cdist, angles, accumulative = true) ->
     vecs = []
@@ -137,36 +152,56 @@ class window.Polygon
     poly2.connections.push conn2
     return polys
 
-  @connectEquiDist: (poly1, poly2) ->
-    minInd = @_minDistPairIndices poly1, poly2
+  @transformPoly2: (poly1, polym) ->
+    newpoints = []
+    newpoints.push p.copy() for p in polym.points
+    poly2 = new Polygon newpoints, polym.normalSign
+    centDiff = poly1.getCentroid().subVec poly2.getCentroid()
+    poly2.translatePoints centDiff
+
+    if isFloatZero(Math.abs(Vec.scalarProd(poly1.normal, poly2.normal)) - 1)
+      return poly2
+    axis = Vec.crossProd3(poly1.normal, poly2.normal).normalize()
+    rrline = new Line poly2.getCentroid(), axis
+    rrangle = Math.acos(
+      Vec.scalarProd poly1.normal, poly2.normal.multScalarC(-1.0))
+    poly2.rotateAroundLine rrline, rrangle
+    return poly2
+
+  @connectMinDist: (p1, p2) ->
     normSign = 1.0
-    if poly1.points.length <= poly2.points.length
-      p1s = poly1.points #smaller n
-      p2s = poly2.points
+    if p1.points.length <= p2.points.length
+      poly1 = p1 # poly1 = smaller n = inner
+      poly2 = p2 # poly2 = bigger n = outer
     else
+      poly1 = p2
+      poly2 = p1
       normSign = -1.0
-      p1s = poly2.points #smaller n
-      p2s = poly1.points
+    p1s = poly1.points
+    p2s = poly2.points
+    polym = Polygon.transformPoly2(poly1, poly2)
+    p2sm = polym.points
     polys = []
     outers = []
     outers.push [] for i in [0..p1s.length-1]
     for i in [0..p1s.length-1]
+      # inner partitions outer in outers[inner] = [lowerInd, upperInd]
       fsti = i
       sndi = (i + 1) %% p1s.length
-      cornerInd = Polygon._minDistToPair p1s, p2s, fsti, sndi
+      cornerInd = Polygon._minDistToPair p1s, p2sm, fsti, sndi
       outers[fsti].push cornerInd
       outers[sndi].push cornerInd
       polys.push new Polygon [p1s[fsti], p1s[sndi], p2s[cornerInd]], normSign
+    # switch only first
     k = outers[0][0]
     outers[0][0] = outers[0][1]
     outers[0][1] = k
-    console.log outers
     for i in [0..p1s.length-1]
       span = Polygon.getBases outers, i, p2s.length
-      continue if span.length == 0
+      continue if span.length == 0 # needed if n = n
       for j in [0..span.length-2]
-        polys.push new Polygon [p2s[span[j]], p2s[span[j+1]], p1s[i]],
-          -normSign
+        poly = new Polygon [p2s[span[j]], p2s[span[j+1]], p1s[i]], -normSign
+        polys.push poly
     conn1 =
       connection: poly2
       polys: polys
