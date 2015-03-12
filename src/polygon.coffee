@@ -138,7 +138,53 @@ class window.Polygon
     return polys
 
   @connectEquiDist: (poly1, poly2) ->
+    minInd = @_minDistPairIndices poly1, poly2
+    normSign = 1.0
+    if poly1.points.length <= poly2.points.length
+      p1s = poly1.points #smaller n
+      p2s = poly2.points
+    else
+      normSign = -1.0
+      p1s = poly2.points #smaller n
+      p2s = poly1.points
+    polys = []
+    outers = []
+    outers.push [] for i in [0..p1s.length-1]
+    for i in [0..p1s.length-1]
+      fsti = i
+      sndi = (i + 1) %% p1s.length
+      cornerInd = Polygon._minDistToPair p1s, p2s, fsti, sndi
+      outers[fsti].push cornerInd
+      outers[sndi].push cornerInd
+      polys.push new Polygon [p1s[fsti], p1s[sndi], p2s[cornerInd]], normSign
+    k = outers[0][0]
+    outers[0][0] = outers[0][1]
+    outers[0][1] = k
+    console.log outers
+    for i in [0..p1s.length-1]
+      span = Polygon.getBases outers, i, p2s.length
+      continue if span.length == 0
+      for j in [0..span.length-2]
+        polys.push new Polygon [p2s[span[j]], p2s[span[j+1]], p1s[i]],
+          -normSign
+    conn1 =
+      connection: poly2
+      polys: polys
+    conn2 =
+      connection: poly1
+      polys: polys
+    poly1.connections.push conn1
+    poly2.connections.push conn2
+    return polys
 
+  @getBases: (outers, i, n) ->
+    span = outers[i]
+    result = []
+    dist = (span[1] + n - span[0]) %% n
+    return [] if dist == 0
+    for i in [0..dist]
+      result.push (span[0] + i) %% n
+    return result
 
   @_minDistPairIndices: (poly1, poly2) ->
     n = poly1.points.length
@@ -153,3 +199,14 @@ class window.Polygon
           minInd1 = i
           minInd2 = j
     return [minInd1, minInd2]
+
+  @_minDistToPair: (base, corner, ind1, ind2) ->
+    minInd = undefined
+    mindist = 1000000
+    for i in [0..corner.length-1]
+      dist = base[ind1].distance(corner[i])
+      dist += base[ind2].distance(corner[i])
+      if mindist > dist
+        mindist = dist
+        minInd = i
+    return minInd

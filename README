@@ -1,3 +1,5 @@
+(:
+
 ===============================================================================
 WHYILIKETREES
 ===============================================================================
@@ -10,9 +12,11 @@ WHYILIKETREES
 ===============================================================================
 UPCOMING TODO
 ===============================================================================
-(*) non-regular, convex polygons
-(*) n != m polygon conncetions
-(*) point polygon connections
+(*) improve connectEquiDist to work for odd situations
+(*) point/line polygon connections
+
+(+) non-regular, convex polygons
+(+) n != m polygon conncetions
 
 
 ===============================================================================

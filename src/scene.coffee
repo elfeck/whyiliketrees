@@ -26,7 +26,7 @@ class window.Scene
     @_pLight1.addToProgram @_fillShader
     @_pLight2.addToProgram @_fillShader
 
-    attenu = 0.2
+    attenu = 0.3
     @_attenuLight = new AttenuationLight new Vec(3, [attenu, attenu, attenu])
     @_attenuLight.addToProgram @_fillShader
 
@@ -62,25 +62,21 @@ class window.Scene
     @pline1 = new Line(
       new Vec(3, [0.0, 0.0, -4]),
       new Vec(3, [0.0, 0.0, 1.0]))
-    @poly1 = Polygon.regularFromLine @pline1, 2, 7
+    @poly1 = Polygon.regularFromLine @pline1, 2, 5
 
     prims = @poly1.gfxAddFill @color2
     @ds4 = new GeomData get_uid(), @_fillShader, prims, GL.TRIANGLES
 
     @pline2 = @pline1.shiftBaseC -5
-    @poly2 = Polygon.convexFromLine @pline2, 5, [
-       0,
-       Math.PI * 2 / 7.0,
-       Math.PI * 2 / 7.0,
-       Math.PI * 2 / 7.0,
-       Math.PI * 2 / 7.0,
-       Math.PI * 2 / 7.0,
-       Math.PI * 2 / 7.0]
+    #@pline2.setDir new Vec 3, [0.4, 0.0, 1.0]
+    @poly2 = Polygon.regularFromLine @pline2, 2, 5
+    @poly2.rotateAroundLine @pline1, Math.PI
 
     prims = @poly2.gfxAddFill @color2
     @ds5 = new GeomData get_uid(), @_fillShader, prims, GL.TRIANGLES
 
-    @polys = Polygon.connectPTP @poly1, @poly2
+    @polys = Polygon.connectEquiDist @poly1, @poly2
+    #@polys = Polygon.connectPTP @poly1, @poly2
     prims = []
     prims = prims.concat p.gfxAddFill @color2 for p in @polys
     @ds6 = new GeomData get_uid(), @_fillShader, prims, GL.TRIANGLES
