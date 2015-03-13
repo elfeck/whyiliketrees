@@ -130,45 +130,8 @@ class window.Polygon
       prims.push new Primitive 3, verts2
     return prims
 
-  #requires same-n-gons
-  @connectPTP: (poly1, poly2) ->
-    minInd = @_minDistPairIndices poly1, poly2
-    p1s = poly1.points
-    p2s = poly2.points
-    n = p1s.length
-    polys = []
-    for i in [0..n-1]
-      pts1 = [p1s[(minInd[0] + i) %% n], p1s[(minInd[0] + i + 1) %% n]]
-      pts2 = [p2s[(minInd[1] + i) %% n], p2s[(minInd[1] + i + 1) %% n]]
-      polys.push new Polygon [pts1[0], pts1[1], pts2[0]], 1.0
-      polys.push new Polygon [pts1[1], pts2[0], pts2[1]], -1.0
-    conn1 =
-      connection: poly2
-      polys: polys
-    conn2 =
-      connection: poly1
-      polys: polys
-    poly1.connections.push conn1
-    poly2.connections.push conn2
-    return polys
-
-  @transformPoly2: (poly1, polym) ->
-    newpoints = []
-    newpoints.push p.copy() for p in polym.points
-    poly2 = new Polygon newpoints, polym.normalSign
-    centDiff = poly1.getCentroid().subVec poly2.getCentroid()
-    poly2.translatePoints centDiff
-
-    if isFloatZero(Math.abs(Vec.scalarProd(poly1.normal, poly2.normal)) - 1)
-      return poly2
-    axis = Vec.crossProd3(poly1.normal, poly2.normal).normalize()
-    rrline = new Line poly2.getCentroid(), axis
-    rrangle = Math.acos(
-      Vec.scalarProd poly1.normal, poly2.normal.multScalarC(-1.0))
-    poly2.rotateAroundLine rrline, rrangle
-    return poly2
-
-  @connectMinDist: (p1, p2) ->
+  # minimum distance match points
+  @pointConnect: (p1, p2) ->
     normSign = 1.0
     if p1.points.length <= p2.points.length
       poly1 = p1 # poly1 = smaller n = inner
@@ -179,8 +142,8 @@ class window.Polygon
       normSign = -1.0
     p1s = poly1.points
     p2s = poly2.points
-    polym = Polygon.transformPoly2(poly1, poly2)
-    p2sm = polym.points
+    #move them on top of each other
+    p2sm = Polygon._matchPositioning(poly1, poly2).points
     polys = []
     outers = []
     outers.push [] for i in [0..p1s.length-1]
@@ -197,10 +160,10 @@ class window.Polygon
     outers[0][0] = outers[0][1]
     outers[0][1] = k
     for i in [0..p1s.length-1]
-      span = Polygon.getBases outers, i, p2s.length
-      continue if span.length == 0 # needed if n = n
-      for j in [0..span.length-2]
-        poly = new Polygon [p2s[span[j]], p2s[span[j+1]], p1s[i]], -normSign
+      bases = Polygon._getBases outers, i, p2s.length
+      continue if bases.length == 0 # needed if n = n
+      for j in [0..bases.length-2]
+        poly = new Polygon [p2s[bases[j]], p2s[bases[j+1]], p1s[i]], -normSign
         polys.push poly
     conn1 =
       connection: poly2
@@ -212,7 +175,7 @@ class window.Polygon
     poly2.connections.push conn2
     return polys
 
-  @getBases: (outers, i, n) ->
+  @_getBases: (outers, i, n) ->
     span = outers[i]
     result = []
     dist = (span[1] + n - span[0]) %% n
@@ -245,3 +208,19 @@ class window.Polygon
         mindist = dist
         minInd = i
     return minInd
+
+  @_matchPositioning: (poly1, poly2) ->
+    newpoints = []
+    newpoints.push p.copy() for p in poly2.points
+    newPoly = new Polygon newpoints, poly2.normalSign
+    centDiff = poly1.getCentroid().subVec newPoly.getCentroid()
+    newPoly.translatePoints centDiff
+
+    if isFloatZero(Math.abs(Vec.scalarProd(poly1.normal, newPoly.normal)) - 1)
+      return newPoly
+    axis = Vec.crossProd3(poly1.normal, newPoly.normal).normalize()
+    rline = new Line newPoly.getCentroid(), axis
+    rangle = Math.acos(
+      Vec.scalarProd poly1.normal, newPoly.normal.multScalarC(-1.0))
+    newPoly.rotateAroundLine rline, rangle
+    return newPoly
