@@ -130,8 +130,80 @@ class window.Polygon
       prims.push new Primitive 3, verts2
     return prims
 
+  @connectPoint: (pol, point) ->
+    polys = []
+    n = pol.points.length
+    for i in [0..n-1]
+      poly = new Polygon [pol.points[i], pol.points[(i+1) %% n], point], -1.0
+      polys.push poly
+    conn =
+      connection: point
+      polys: polys
+    pol.connections.push conn
+    return polys
+
+  @connectLineSeg: (pol, pts) ->
+    polpts = pol.points
+    polys = []
+    outers = []
+    ptsm = Polygon._matchPositioningLineSeg pol, pts
+    #first out of loop
+    fstCornerInd = Polygon._minDistToPair polpts, ptsm, 0, 1
+    oldCornerInd = fstCornerInd
+    polys.push new Polygon [polpts[0], polpts[1], pts[fstCornerInd]], -1
+    for i in [1..polpts.length-1]
+      fsti = i
+      sndi = (i + 1) %% polpts.length
+      cornerInd = Polygon._minDistToPair polpts, ptsm, fsti, sndi
+      if cornerInd != oldCornerInd
+        poly = new Polygon([pts[oldCornerInd], pts[cornerInd], polpts[fsti]])
+        polys.push poly
+      oldCornerInd = cornerInd
+      polys.push new Polygon [polpts[fsti], polpts[sndi], pts[cornerInd]], -1
+    #wrap around last -> first
+    if fstCornerInd != oldCornerInd
+      poly = new Polygon([pts[oldCornerInd], pts[fstCornerInd], polpts[0]])
+      polys.push poly
+    conn =
+      connection: pts
+      polys: polys
+    pol.connections.push conn
+    return polys
+
+  @connectLineSeg_: (pol, pts) ->
+    polpts = pol.points
+    polys = []
+    outers = []
+    used = []
+    outers.push [] for i in [0..pts.length-1]
+    ptsm = Polygon._matchPositioningLineSeg pol, pts
+    for i in [0..pts.length-1]
+      # inner partitions outer in outers[inner] = [lowerInd, upperInd]
+      fsti = i
+      sndi = (i + 1) %% pts.length
+      cornerInd = Polygon._minDistToPair ptsm, polpts, fsti, sndi, used
+      used.push cornerInd
+      outers[fsti].push cornerInd
+      outers[sndi].push cornerInd
+      polys.push new Polygon [pts[fsti], pts[sndi], polpts[cornerInd]]
+    k = outers[0][0]
+    outers[0][0] = outers[0][1]
+    outers[0][1] = k
+    for i in [0..pts.length-1]
+      bases = Polygon._getBases outers, i, polpts.length
+      continue if bases.length == 0 # needed if n = n
+      for j in [0..bases.length-2]
+        poly = new Polygon(
+          [polpts[bases[j]], polpts[bases[j+1]], pts[i]], -1.0)
+        polys.push poly
+    conn =
+      connection: pts
+      polys: polys
+    pol.connections.push conn
+    return polys
+
   # minimum distance match points
-  @pointConnect: (p1, p2) ->
+  @pConnectPolygons: (p1, p2) ->
     normSign = 1.0
     if p1.points.length <= p2.points.length
       poly1 = p1 # poly1 = smaller n = inner
@@ -143,7 +215,7 @@ class window.Polygon
     p1s = poly1.points
     p2s = poly2.points
     #move them on top of each other
-    p2sm = Polygon._matchPositioning(poly1, poly2).points
+    p2sm = Polygon._matchPositioningPoly(poly1, poly2).points
     polys = []
     outers = []
     outers.push [] for i in [0..p1s.length-1]
@@ -184,38 +256,39 @@ class window.Polygon
       result.push (span[0] + i) %% n
     return result
 
-  @_minDistPairIndices: (poly1, poly2) ->
-    n = poly1.points.length
-    m = poly2.points.length
-    mindist = 1000000
-    minInd1 = undefined
-    minInd2 = undefined
-    for i in [0..n-1]
-      for j in [0..m-1]
-        if mindist > (d = poly1.points[i].distance(poly2.points[j]))
-          mindist = d
-          minInd1 = i
-          minInd2 = j
-    return [minInd1, minInd2]
-
-  @_minDistToPair: (base, corner, ind1, ind2) ->
+  @_minDistToPair: (base, corner, ind1, ind2, used = []) ->
     minInd = undefined
     mindist = 1000000
     for i in [0..corner.length-1]
       dist = base[ind1].distance(corner[i])
       dist += base[ind2].distance(corner[i])
-      if mindist > dist
+      if mindist > dist and used.indexOf(i) < 0
         mindist = dist
         minInd = i
     return minInd
 
-  @_matchPositioning: (poly1, poly2) ->
+  @_matchPositioningLineSeg: (poly, pts) ->
+    centr = pts[0].addVecC(pts[1]).multScalar(0.5)
+    centDiff = poly.getCentroid().subVec centr
+    p1t = pts[0].addVecC centDiff
+    p2t = pts[1].addVecC centDiff
+    ortho = Vec.orthogonalVec p1t, p2t
+    if isFloatZero(Math.abs(Vec.scalarProd(poly.normal, ortho)) - 1)
+      return [p1t, p2t]
+    axis = Vec.crossProd3(poly.normal, ortho).normalize()
+    centr = p1t.addVecC(p2t).multScalar(0.5)
+    rline = new Line centr, axis
+    rangle = Math.acos(Vec.scalarProd poly.normal, ortho.multScalar(-1.0))
+    rline.rotatePoint p1t, rangle
+    rline.rotatePoint p2t, rangle
+    return [p1t, p2t]
+
+  @_matchPositioningPoly: (poly1, poly2) ->
     newpoints = []
     newpoints.push p.copy() for p in poly2.points
     newPoly = new Polygon newpoints, poly2.normalSign
     centDiff = poly1.getCentroid().subVec newPoly.getCentroid()
     newPoly.translatePoints centDiff
-
     if isFloatZero(Math.abs(Vec.scalarProd(poly1.normal, newPoly.normal)) - 1)
       return newPoly
     axis = Vec.crossProd3(poly1.normal, newPoly.normal).normalize()

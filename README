@@ -12,13 +12,14 @@ WHYILIKETREES
 ===============================================================================
 UPCOMING TODO
 ===============================================================================
-(*) point/line polygon connections
 (*) non-polygon point-set connections
 (*) ?
 
+-------------------------------------------------------------------------------
 (+) improve connectEquiDist to work for odd situations
 (+) non-regular, convex polygons
 (+) n != m polygon conncetions
+(+) point/line polygon connections
 
 
 ===============================================================================

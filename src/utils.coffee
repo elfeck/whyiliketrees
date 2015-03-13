@@ -1,5 +1,5 @@
 _id = 1
-window.get_uid = ->
+window.getuid = ->
   _id++
   return _id - 1
 
@@ -20,11 +20,11 @@ window.dprint = (msg) ->
       m = "0" + m
     if s.length == 1
       s = "0" + s
-    #line = "[" + h + ":" + m + ":" + s  + "]  "
-    line = ""
-    console = document.getElementById("console")
-    console.innerHTML += ("\n" + line + msg)
-    console.scrollTop = console.scrollHeight
+    line = "[" + h + ":" + m + ":" + s  + "] " + msg + "\n"
+    console.log msg if consoleLog
+    cons = document.getElementById("console")
+    cons.innerHTML += (line)
+    cons.scrollTop = cons.scrollHeight
     window._knownLines.push msg
     return
 

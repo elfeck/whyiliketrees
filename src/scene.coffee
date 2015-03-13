@@ -48,8 +48,8 @@ class window.Scene
   delegateDoLogic: (delta) ->
     accTime += delta
 
-    @poly1.rotateAroundLine @pline1, Math.PI * delta * 0.0001
-    @poly2.rotateAroundLine @pline1, Math.PI * delta * 0.0001
+    #@poly1.rotateAroundLine @pline1, Math.PI * delta * 0.0001
+    #@poly2.rotateAroundLine @pline1, Math.PI * delta * 0.0001
 
     @ds4.setModified()
     @ds5.setModified()
@@ -65,20 +65,23 @@ class window.Scene
     @poly1 = Polygon.regularFromLine @pline1, 0.75, 3, -1.0
 
     prims = @poly1.gfxAddFill @color2
-    @ds4 = new GeomData get_uid(), @_fillShader, prims, GL.TRIANGLES
+    @ds4 = new GeomData getuid(), @_fillShader, prims, GL.TRIANGLES
 
     @pline2 = @pline1.shiftBaseC -5
     @poly2 = Polygon.regularFromLine @pline2, 2, 7
     @poly2.rotateAroundLine @pline2, Math.PI / 7.0
 
     prims = @poly2.gfxAddFill @color2
-    @ds5 = new GeomData get_uid(), @_fillShader, prims, GL.TRIANGLES
+    @ds5 = new GeomData getuid(), @_fillShader, prims, GL.TRIANGLES
 
-    @polys = Polygon.pointConnect @poly1, @poly2
+    #@polys = Polygon.pConnectPolygons @poly1, @poly2
+    point1 = new Vec 3, [-1, 0.0, -4], true
+    point2 = new Vec 3, [1, 0.0, -4], true
+    @polys = Polygon.connectLineSeg @poly2, [point1, point2]
     prims = []
     prims = prims.concat p.gfxAddFill @color2 for p in @polys
-    @ds6 = new GeomData get_uid(), @_fillShader, prims, GL.TRIANGLES
+    @ds6 = new GeomData getuid(), @_fillShader, prims, GL.TRIANGLES
 
-    @_fillGeom.addData @ds4
+    #@_fillGeom.addData @ds4
     @_fillGeom.addData @ds5
     @_fillGeom.addData @ds6

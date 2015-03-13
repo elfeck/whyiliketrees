@@ -4,7 +4,7 @@ window.input = undefined
 window.display = undefined
 
 window.debug = true
-window.wireFrame = false
+window.consoleLog = true
 window.mouseActive = false
 
 class window.Display
