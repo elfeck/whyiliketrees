@@ -12,7 +12,8 @@ class window.DirLight
 class window.PointLight
 
   constructor: (@lightPos, @lightAtt, @number = 0,
-    @lightInt = new Vec(3, [0.7, 0.7, 0.7])) ->
+                @lightInt = new Vec(3, [0.7, 0.7, 0.7])) ->
+    @debugCube = undefined
 
   addToProgram: (program, id = 0) ->
     program.addUniformGL id, "lights[" + @number + "].light_att", @lightAtt
@@ -21,9 +22,13 @@ class window.PointLight
     return
 
   cubeOnPosition: (size = 2, color = @lightInt) ->
-    return PlatonicSolid.cubeAroundCenterC @lightPos, size, color
+    @debugCube = PlatonicSolid.cubeAroundCenterC @lightPos, size, color
+    return @debugCube
 
-  linesFromPosition: (color, num = 3) ->
+  updateDebugCube: () ->
+    return
+
+  linesFromPosition: (color = new Vec(3, [0.0, 1.0, 0.0]), num = 3) ->
     dirs = [
       new Vec(3, [1.0, 0.0, 0.0]), new Vec(3, [0.0, 1.0, 0.0]),
       new Vec(3, [0.0, 0.0, 1.0]), new Vec(3, [1.0, 1.0, 0.0]),
@@ -36,8 +41,7 @@ class window.PointLight
     prims = []
     for i in [1..num]
       line = new Line @lightPos, dirs[i - 1].normalize()
-      prims = prims.concat line.coloredLineSegC(-l, l * 2.0, color)
-
+      prims = prims.concat line.getLineSegC(-l, l * 2.0, color)
     return prims
 
 class window.AttenuationLight

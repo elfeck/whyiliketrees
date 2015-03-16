@@ -1,5 +1,9 @@
 class window.Geom
 
+  @debugTotalPrimCount = 0
+  @debugTotalDrawCalls = 0
+  @debugTotalUpdates = 0
+
   constructor: (@_layout) ->
     @_datasets = []
     @_vb = undefined
@@ -17,6 +21,7 @@ class window.Geom
     @bindGL()
     for d in @_datasets
       continue if not d.visible
+      Geom.debugTotalDrawCalls++
       d.program.bindGL()
       d.program.uploadUniformsGL 0
       d.program.uploadUniformsGL d.id
@@ -52,6 +57,7 @@ class window.Geom
         minInd = Math.min(minInd, i)
         maxInd = Math.max(maxInd, i)
     if maxInd > -1
+      Geom.debugTotalUpdates++
       GL.bindBuffer GL.ARRAY_BUFFER, @_vb
       GL.bufferSubData GL.ARRAY_BUFFER, @_datasets[minInd].vOffs * 4,
         new Float32Array(@fetchModVertexData(minInd, maxInd))
@@ -63,6 +69,7 @@ class window.Geom
     return
 
   addData: (geomData) ->
+    Geom.debugTotalPrimCount += geomData.getPrimCount() #debug
     @_modified = true
     @_datasets.push geomData
     iOffs = 0
@@ -125,6 +132,12 @@ class window.GeomData
     return 0 if @prims.length is 0
     return @prims.length * @prims[0].vCount
 
+  getPrimCount: ->
+    m = 1 if @mode == GL.POINTS
+    m = 2 if @mode == GL.LINES
+    m = 3 if @mode == GL.TRIANGLES
+    return @getICount() / m
+
   fetchVertexData: (vRaw) ->
     p.fetchVertexData vRaw for p in @prims
     return
@@ -137,6 +150,8 @@ class window.GeomData
 class window.Primitive
 
   constructor: (@vCount, @vertices = []) ->
+    @vertexDebugLines = []
+    @centroidDebugLine = undefined
 
   fetchVertexData: (vRaw) ->
     v.fetchVertexData vRaw for v in @vertices
@@ -145,6 +160,9 @@ class window.Primitive
   fetchIndexData: (iRaw, offs) ->
     iRaw.push(i + offs) for i in [0..@vCount-1] by 1
     return offs + @vCount
+
+  updateDebugLines: () ->
+    return
 
   vertexNormalLinesDebug: (length = 2, color = new Vec(3, [0.0, 1.0, 0.0])) ->
     if @vCount is not 3

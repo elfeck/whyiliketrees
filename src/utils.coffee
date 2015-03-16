@@ -20,7 +20,7 @@ window.dprint = (msg) ->
       m = "0" + m
     if s.length == 1
       s = "0" + s
-    line = "[" + h + ":" + m + ":" + s  + "] " + msg + "\n"
+    line = "[" + h + ":" + m + ":" + s  + "]  " + msg + "\n"
     console.log msg if consoleLog
     cons = document.getElementById("console")
     cons.innerHTML += (line)
@@ -29,6 +29,7 @@ window.dprint = (msg) ->
     return
 
 window.setInfo = (i, msg) ->
+  return if not window.debug
   document.getElementById("info" + i).innerHTML = msg
   return
 
@@ -40,11 +41,17 @@ window.toggleDebug = ->
     document.getElementById("info1").style.color = "#666666"
     document.getElementById("info2").style.color = "#666666"
     document.getElementById("info3").style.color = "#666666"
+    document.getElementById("info4").style.color = "#666666"
+    document.getElementById("info5").style.color = "#666666"
+    document.getElementById("info6").style.color = "#666666"
   else
     document.getElementById("console").style.display = "none"
     document.getElementById("info1").style.color = "transparent"
     document.getElementById("info2").style.color = "transparent"
     document.getElementById("info3").style.color = "transparent"
+    document.getElementById("info4").style.color = "transparent"
+    document.getElementById("info5").style.color = "transparent"
+    document.getElementById("info6").style.color = "transparent"
   return
 
 window.getShaderAttributes = (vertSrc) ->

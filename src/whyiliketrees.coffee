@@ -16,8 +16,8 @@ class window.Display
 
     @_last = new Date().getTime()
     @_delta = 0
-    @_deltaItv = 100
-    @_deltaAcm = 100
+    @_deltaItv = 200
+    @_deltaAcm = 200
     @_cameraItv = 200
     @_cameraAcm = 200
     @_dprintItv = 1000
@@ -30,7 +30,8 @@ class window.Display
     @_deltaSum = 0
     @_deltaAvg = 0
 
-    @_scene = undefined
+    @_scenes = []
+    @_currentScene = 0
 
   initGL: (canvas) ->
     canvas.setAttribute("width", @width)
@@ -55,7 +56,9 @@ class window.Display
   initGame: ->
     window.input = new Input canvas
     window.camera = new Camera
-    @_scene = new Scene
+    @_scenes.push new TestScene
+    window.setInfo 1, "Current Scene: [" + @_currentScene + ", " +
+      @_scenes[@_currentScene].debugName + "]"
     return
 
   compTime: ->
@@ -69,21 +72,34 @@ class window.Display
     @_deltaSum += @_delta
 
     if @_deltaAcm >= @_deltaItv
-      window.setInfo 2, @_delta + "ms delta  [" +
+      window.setInfo 3, @_delta + "ms delta  [" +
         (@_deltaAvg + "").substring(0, 4) + "ms]"
       @_deltaAcm = 0
+      @setGeomDebugInfo() # should not be here but lazy
 
     if @_deltaAvgAcm >= @_deltaAvgItv
       @_deltaAvg = @_deltaSum / @_ticks
-      window.setInfo 2, @_delta + "ms delta  [" +
+      window.setInfo 3, @_delta + "ms delta  [" +
         (@_deltaAvg + "").substring(0, 4) + "ms]"
       @_deltaAvgAcm = 0
       @_ticks = 0
       @_deltaSum = 0
 
     if @_cameraAcm >= @_cameraItv
-      window.setInfo 1, "camera " + window.camera.posToString()
+      window.setInfo 5, "Camera " + window.camera.posToString()
       @_cameraAcm = 0
+    return
+
+  checkScene: ->
+    for i in [49..57]
+      if input.keyPressed i
+        ind = i - 49
+        if ind < @_scenes.length
+          @_currentScene = ind
+          window.setInfo 1, "Current Scene: [" + ind + ", " +
+            @_scenes[@_currentScene].debugName + "]"
+        else
+          dprint "No Scene available for [" + ind + "]   :("
     return
 
   resetDprint: ->
@@ -91,23 +107,29 @@ class window.Display
       window._knownLines = []
       @_dprintAcm = 0
     @_dprintAcm += @_delta
+    return
+
+  setGeomDebugInfo: ->
+    window.setInfo 2, "Primitive count: " + Geom.debugTotalPrimCount
+    window.setInfo 4, "Draw calls: " + Geom.debugTotalDrawCalls
+    window.setInfo 6, "Subbuffer updates: " + Geom.debugTotalUpdates
+    return
 
   executeDrawGL: ->
     GL.clear (GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT)
-    @_scene.delegateDrawGL()
+    Geom.debugTotalDrawCalls = 0 # debug
+    @_scenes[@_currentScene].delegateDrawGL()
     return
 
   executeDoLogic: ->
+    @checkScene()
     @compTime()
     @resetDprint()
     window.camera.doLogic @_delta
-    @_scene.delegateDoLogic @_delta
+    Geom.debugTotalUpdates = 0 # debug
+    @_scenes[@_currentScene].delegateDoLogic @_delta
     window.input.reset()
     return
-
-  # maybe more scenes later
-  currentScene: ->
-    return @_scene
 
 updateGL = ->
   window.display.executeDoLogic()

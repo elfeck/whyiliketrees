@@ -180,10 +180,11 @@ class window.PlatonicSolid
     ydir = new Vec 3, [0.0, 1.0, 0.0]
     sideL = edgeLength / Math.sqrt(2)
     line = new Line @center.addVecC(ydir.multScalarC(-edgeLength / 2.0)), ydir
-    poly1 = Polygon.regularFromLine line, 4, sideL
-    poly2 = Polygon.regularFromLine line.shiftBaseC(edgeLength), 4, sideL
+    poly1 = Polygon.regularFromLine line, sideL, 4
+    poly2 = Polygon.regularFromLine line.shiftBaseC(edgeLength), sideL, 4
     prims = []
-    prims = prims.concat poly1.coloredFillC true, col
-    prims = prims.concat poly2.coloredFillC false, col
-    prims = prims.concat Polygon.triangleconnectPolysC poly1, poly2, col
+    prims = prims.concat poly1.gfxAddFill col
+    prims = prims.concat poly2.gfxAddFill col
+    polys = Polygon.pConnectPolygons poly1, poly2
+    prims = prims.concat p.gfxAddFill col for p in polys
     return prims

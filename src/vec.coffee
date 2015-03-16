@@ -63,7 +63,7 @@ class window.Vec
 
   toHomVec: ->
     if @dim < 2 or @dim > 4 or @asHom
-      window.dprint "toHomVecC invalid dim / asHom"
+      window.dprint "toHomVec invalid dim / asHom"
       return undefined
     @data.push 0.0 if @dim <= 2
     @data.push 1.0 if @dim <= 3
@@ -71,7 +71,7 @@ class window.Vec
 
   toHomVecC: ->
     if @dim < 2 or @dim > 4 or @asHom
-      window.dprint "toHomVecC invalid dim / asHom"
+      window.dprint "toHomVecC invalid dim / asHom: " + @dim + " " + @asHom
       return undefined
     newdata = @data.slice()
     newdata.push 0.0 if @dim <= 2

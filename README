@@ -12,14 +12,15 @@ WHYILIKETREES
 ===============================================================================
 UPCOMING TODO
 ===============================================================================
-(*) non-polygon point-set connections
-(*) ?
+(*) Clean up / Easy Debug Grahics
+(*) Clean up privite attrib / methods
 
 -------------------------------------------------------------------------------
 (+) improve connectEquiDist to work for odd situations
 (+) non-regular, convex polygons
 (+) n != m polygon conncetions
 (+) point/line polygon connections
+(+) Display Scene Debug
 
 
 ===============================================================================

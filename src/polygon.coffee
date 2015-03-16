@@ -19,7 +19,7 @@ class window.Polygon
     verts = []
     verts.push(new Vertex([@points[i], color, @normal])) for i in [0..n-1]
     prims = []
-    for i in [0..n-2]
+    for i in [1..n-2]
       prims.push(new Primitive 3, [verts[0], verts[i], verts[i + 1]])
     return prims
 
@@ -164,38 +164,6 @@ class window.Polygon
     if fstCornerInd != oldCornerInd
       poly = new Polygon([pts[oldCornerInd], pts[fstCornerInd], polpts[0]])
       polys.push poly
-    conn =
-      connection: pts
-      polys: polys
-    pol.connections.push conn
-    return polys
-
-  @connectLineSeg_: (pol, pts) ->
-    polpts = pol.points
-    polys = []
-    outers = []
-    used = []
-    outers.push [] for i in [0..pts.length-1]
-    ptsm = Polygon._matchPositioningLineSeg pol, pts
-    for i in [0..pts.length-1]
-      # inner partitions outer in outers[inner] = [lowerInd, upperInd]
-      fsti = i
-      sndi = (i + 1) %% pts.length
-      cornerInd = Polygon._minDistToPair ptsm, polpts, fsti, sndi, used
-      used.push cornerInd
-      outers[fsti].push cornerInd
-      outers[sndi].push cornerInd
-      polys.push new Polygon [pts[fsti], pts[sndi], polpts[cornerInd]]
-    k = outers[0][0]
-    outers[0][0] = outers[0][1]
-    outers[0][1] = k
-    for i in [0..pts.length-1]
-      bases = Polygon._getBases outers, i, polpts.length
-      continue if bases.length == 0 # needed if n = n
-      for j in [0..bases.length-2]
-        poly = new Polygon(
-          [polpts[bases[j]], polpts[bases[j+1]], pts[i]], -1.0)
-        polys.push poly
     conn =
       connection: pts
       polys: polys

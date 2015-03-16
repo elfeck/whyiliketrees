@@ -145,13 +145,15 @@ class window.Camera
     a = (@_viewRotAngle %% 2 * Math.PI) / Math.PI + ""
     b = (@_xRotAngle %% 2 * Math.PI) / Math.PI + ""
     c = (@_yRotAngle %% 2 * Math.PI) / Math.PI + ""
-
-    x = x.substring 0, 6
-    y = y.substring 0, 6
-    z = z.substring 0, 6
+    b10 = Math.log(10)
+    lx = Math.max 0, Math.floor(Math.log(Math.abs(x + 10)) / b10)
+    ly = Math.max 0, Math.floor(Math.log(Math.abs(y + 10)) / b10)
+    lz = Math.max 0, Math.floor(Math.log(Math.abs(z + 10)) / b10)
+    x = x.substring 0, 4 + lx
+    y = y.substring 0, 4 + ly
+    z = z.substring 0, 4 + lz
     a = a.substring 0, 3
     b = b.substring 0, 3
     c = c.substring 0, 3
-
-    return "[" + x + ", " + y + ", " + z + " | " + a + " pi, " + b + "pi ," +
-      c + " pi]"
+    rotations = " | " + a + " pi, " + b + "pi ," + c + " pi"
+    return "[" + x + ", " + y + ", " + z + "]"

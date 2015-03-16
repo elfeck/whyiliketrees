@@ -1,6 +1,7 @@
-class window.Scene
+class window.TestScene
 
   constructor: ->
+    @debugName = "Test"
     @_lineGeom = new Geom [4, 3]
     @_lineGeom.initGL()
     @_lineShader = new ShaderProgram window.colLineVert, window.colLineFrag
@@ -24,7 +25,7 @@ class window.Scene
       1,
       new Vec(3, [1.0, 1.0, 1.0]))
     @_pLight1.addToProgram @_fillShader
-    @_pLight2.addToProgram @_fillShader
+    #@_pLight2.addToProgram @_fillShader
 
     attenu = 0.3
     @_attenuLight = new AttenuationLight new Vec(3, [attenu, attenu, attenu])
@@ -51,6 +52,9 @@ class window.Scene
     #@poly1.rotateAroundLine @pline1, Math.PI * delta * 0.0001
     #@poly2.rotateAroundLine @pline1, Math.PI * delta * 0.0001
 
+    @_pLight1.lightPos.data[0] = 40 * Math.sin(Math.PI * accTime * 0.0005)
+    @_pLight1.updateDebugCube()
+
     @ds4.setModified()
     @ds5.setModified()
     @ds6.setModified()
@@ -74,14 +78,18 @@ class window.Scene
     prims = @poly2.gfxAddFill @color2
     @ds5 = new GeomData getuid(), @_fillShader, prims, GL.TRIANGLES
 
-    #@polys = Polygon.pConnectPolygons @poly1, @poly2
+    @polys = Polygon.pConnectPolygons @poly1, @poly2
     point1 = new Vec 3, [-1, 0.0, -4], true
     point2 = new Vec 3, [1, 0.0, -4], true
-    @polys = Polygon.connectLineSeg @poly2, [point1, point2]
     prims = []
     prims = prims.concat p.gfxAddFill @color2 for p in @polys
     @ds6 = new GeomData getuid(), @_fillShader, prims, GL.TRIANGLES
 
-    #@_fillGeom.addData @ds4
+    dprims = @_pLight1.cubeOnPosition()
+    @dd = new GeomData getuid(), @_fillShader, dprims, GL.TRIANGLES
+
+    @_fillGeom.addData @dd
+
+    @_fillGeom.addData @ds4
     @_fillGeom.addData @ds5
     @_fillGeom.addData @ds6
