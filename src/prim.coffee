@@ -38,15 +38,6 @@ class window.Line
     @updateLineSegs()
     return
 
-  getLineSegC: (bdist, length, color = new Vec(3, [1.0, 1.0, 1.0])) ->
-    col = color.copy()
-    verts = [
-      new Vertex([@pointAtDistanceC(bdist).toHomVecC(), col]),
-      new Vertex([@pointAtDistanceC(bdist + length).toHomVecC(), col])
-    ]
-    prim = new Primitive 2, verts
-    return [prim]
-
   getRotationMatrix: (angle, rmat = new Mat(4, 4)) ->
     cc = Math.cos angle
     ss = Math.sin angle
@@ -117,46 +108,6 @@ class window.Plane
   constructor: (@base, unorm) ->
     @norm = unorm.copy().normalize()
 
-  getLineSegsC: (dist1, dist2, color = new Vec(3, [1.0, 1.0, 1.0])) ->
-    col = color.copy()
-    dir1 = Vec.orthogonalVec(@norm).normalize()
-    dir2 = Vec.crossProd3(@norm, dir1).normalize()
-
-    line1 = new Line @base, dir1
-    line2 = new Line @base, dir2
-
-    prim1 = line1.toColoredLineSeg -dist1 / 2.0, dist1, col
-    prim2 = line2.toColoredLineSeg -dist2 / 2.0, dist2, col
-
-    return [prim1, prim2]
-
-  getFillC: (dist, angle, color = new Vec(3, [1.0, 1.0, 1.0])) ->
-    col = color.copy()
-    dir1 = Vec.orthogonalVec(@norm).normalize()
-    dir2 = Vec.crossProd3(@norm, dir1).normalize()
-
-    dist /= 2.0
-
-    nline = new Line @base, @norm
-    rmat = nline.getRotationMatrix angle
-
-    vec1 = @base.addVecC(dir1.multScalarC(dist)).toHomVecC().multMat(rmat)
-    vec2 = @base.addVecC(dir2.multScalarC(dist)).toHomVecC().multMat(rmat)
-    vec3 = @base.addVecC(dir1.multScalarC(-dist)).toHomVecC().multMat(rmat)
-    vec4 = @base.addVecC(dir2.multScalarC(-dist)).toHomVecC().multMat(rmat)
-
-    normal = Vec.surfaceNormal vec1, vec2, vec3
-
-    vert1 = new Vertex([vec1, col, normal])
-    vert2 = new Vertex([vec2, col, normal])
-    vert3 = new Vertex([vec3, col, normal])
-    vert4 = new Vertex([vec4, col, normal])
-
-    prim1 = new Primitive 3, [vert1, vert2, vert3]
-    prim2 = new Primitive 3, [vert3, vert4, vert1]
-
-    return [prim1, prim2]
-
   getPlaneParam: ->
     return -Vec.scalarProd(@norm, @base)
 
@@ -170,21 +121,25 @@ class window.Plane
     return new Plane points[0].copy(), Vec.crossProd3(v1, v2)
 
 
-class window.PlatonicSolid
+class window.Cube
 
-  constructor: ->
+  constructor: (@center, @edgeLen) ->
+    @polys = []
 
-  @cubeAroundCenterC: (@center, edgeLength,
-                       color = new Vec(3, [1.0, 1.0, 1.0])) ->
-    col = color.copy()
+  gfxAddFill: (color) ->
     ydir = new Vec 3, [0.0, 1.0, 0.0]
-    sideL = edgeLength / Math.sqrt(2)
-    line = new Line @center.addVecC(ydir.multScalarC(-edgeLength / 2.0)), ydir
-    poly1 = Polygon.regularFromLine line, sideL, 4
-    poly2 = Polygon.regularFromLine line.shiftBaseC(edgeLength), sideL, 4
+    sideL = @edgeLen / Math.sqrt(2)
+    line = new Line @center.addVecC(ydir.multScalarC(-@edgeLen / 2.0)), ydir
+    @polys.push Polygon.regularFromLine line, sideL, 4, -1
+    @polys.push Polygon.regularFromLine line.shiftBaseC(@edgeLen), sideL, 4
+    @polys = @polys.concat Polygon.pConnectPolygons @polys[0], @polys[1]
     prims = []
-    prims = prims.concat poly1.gfxAddFill col
-    prims = prims.concat poly2.gfxAddFill col
-    polys = Polygon.pConnectPolygons poly1, poly2
-    prims = prims.concat p.gfxAddFill col for p in polys
+    prims = prims.concat p.gfxAddFill color for p in @polys
     return prims
+
+  setCenter: (newCenter) ->
+    diff = newCenter.subVecC @center
+    @center = newCenter
+    @polys[0].translatePoints diff
+    @polys[1].translatePoints diff
+    return

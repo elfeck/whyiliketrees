@@ -49,29 +49,6 @@ class window.Polygon
   getCentroidAxisDebug: (length, color) ->
     return @getCentroidAxis().getLineSegC 0, length, color
 
-  getOutlineC: (color = new Vec(3, [1.0, 1.0, 1.0])) ->
-    col = color.copy()
-    verts = []
-    n = @points.length
-    verts.push(new Vertex([@points[i].copy(), col])) for i in [0..n-1]
-    prims = []
-    prims.push(new Primitive 2, [verts[i], verts[i + 1]]) for i in [0..n-2]
-    prims.push(new Primitive 2, [verts[n - 1], verts[0]])
-    return prims
-
-  # only working for convex polygons
-  getFillC: (invnormal = false, color = new Vec(3, [1.0, 1.0, 1.0])) ->
-    col = color.copy()
-    verts = []
-    n = @points.length
-    normal = Vec.surfaceNormal @points[0], @points[1], @points[2]
-    normal.multScalar(-1.0) if invnormal
-    verts.push(new Vertex([@points[i].copy(), col, normal])) for i in [0..n-1]
-    prims = []
-    for i in [0..n-2]
-      prims.push(new Primitive 3, [verts[0], verts[i], verts[i + 1]])
-    return prims
-
   @regularFromLine: (line, cdist, n, normSign = 1.0) ->
     angle = 2.0 * Math.PI / n
     vecs = []

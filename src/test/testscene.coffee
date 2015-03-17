@@ -15,7 +15,7 @@ class window.TestScene
     @_fillShader.addUniformGL(0, "offs", new Vec(3, [0.0, 0.0, 0.0]))
 
     @_pLight1 = new PointLight(
-      new Vec(3, [0.0, 30, -10.0]),
+      new Vec(3, [0.0, 10, -10.0]),
       new Vec(1, [50.0]),
       0,
       new Vec(3, [1.0, 1.0, 1.0]))
@@ -49,11 +49,13 @@ class window.TestScene
   delegateDoLogic: (delta) ->
     accTime += delta
 
-    #@poly1.rotateAroundLine @pline1, Math.PI * delta * 0.0001
-    #@poly2.rotateAroundLine @pline1, Math.PI * delta * 0.0001
+    @poly1.rotateAroundLine @pline1, Math.PI * delta * 0.0001
+    @poly2.rotateAroundLine @pline1, Math.PI * delta * 0.0001
 
-    @_pLight1.lightPos.data[0] = 40 * Math.sin(Math.PI * accTime * 0.0005)
-    @_pLight1.updateDebugCube()
+    @_pLight1.lightPos.data[0] = 10 * Math.sin(Math.PI * accTime * 0.0005)
+    @_pLight1.dbgUpdate()
+
+    @dd.setModified()
 
     @ds4.setModified()
     @ds5.setModified()
@@ -85,9 +87,8 @@ class window.TestScene
     prims = prims.concat p.gfxAddFill @color2 for p in @polys
     @ds6 = new GeomData getuid(), @_fillShader, prims, GL.TRIANGLES
 
-    dprims = @_pLight1.cubeOnPosition()
+    dprims = @_pLight1.dbgAddCube()
     @dd = new GeomData getuid(), @_fillShader, dprims, GL.TRIANGLES
-
     @_fillGeom.addData @dd
 
     @_fillGeom.addData @ds4

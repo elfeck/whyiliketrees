@@ -21,11 +21,12 @@ class window.PointLight
     program.addUniformGL id, "lights[" + @number + "].light_int", @lightInt
     return
 
-  cubeOnPosition: (size = 2, color = @lightInt) ->
-    @debugCube = PlatonicSolid.cubeAroundCenterC @lightPos, size, color
-    return @debugCube
+  dbgAddCube: (size = 2, color = @lightInt) ->
+    @debugCube = new Cube(@lightPos.copy(), size)
+    return @debugCube.gfxAddFill color
 
-  updateDebugCube: () ->
+  dbgUpdate: ->
+    @debugCube.setCenter @lightPos.copy() if @debugCube?
     return
 
   linesFromPosition: (color = new Vec(3, [0.0, 1.0, 0.0]), num = 3) ->

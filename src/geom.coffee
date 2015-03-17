@@ -47,6 +47,7 @@ class window.Geom
   updateGL: () ->
     return if @_datasets.length == 0
     if @_modified
+      Geom.debugTotalUpdates++
       @uploadGL()
       return
     minInd = @_datasets.length
@@ -138,6 +139,10 @@ class window.GeomData
     m = 3 if @mode == GL.TRIANGLES
     return @getICount() / m
 
+  dbgUpdate: ->
+    p.dbgUpdate() for p in @prims
+    return
+
   fetchVertexData: (vRaw) ->
     p.fetchVertexData vRaw for p in @prims
     return
@@ -150,8 +155,8 @@ class window.GeomData
 class window.Primitive
 
   constructor: (@vCount, @vertices = []) ->
-    @vertexDebugLines = []
-    @centroidDebugLine = undefined
+    @dbgVertexLines = []
+    @dbgCentroidLine = undefined
 
   fetchVertexData: (vRaw) ->
     v.fetchVertexData vRaw for v in @vertices
@@ -161,28 +166,39 @@ class window.Primitive
     iRaw.push(i + offs) for i in [0..@vCount-1] by 1
     return offs + @vCount
 
-  updateDebugLines: () ->
+  dbgUpdate: ->
+    if @dbgVertexLines.length != 0
+      for i in [0..@vertices.length-1]
+        @dbgVertexLines[i].setBase @vertices[i].data[0].stripHomC()
+        @dbgVertexLines[i].setDir @vertices[i].data[2].normalizeC()
+    if @dbgCentroidLine?
+      centroid = new Vec 3
+      centroid.addVec v.data[0].stripHomC() for v in @vertices
+      centroid.multScalar(1.0 / 3.0)
+      @dbgCentroidLine.setBase centroid
+      @dbgCentroidLine.setDir @vertices[0].data[2].normalizeC()
     return
 
-  vertexNormalLinesDebug: (length = 2, color = new Vec(3, [0.0, 1.0, 0.0])) ->
+  dbgAddVertexNormals: (length = 2, color = new Vec(3, [0.0, 1.0, 0.0])) ->
     if @vCount is not 3
-      window.dprint "No triangle, no normal"
+      window.dprint "dbgAddVertexNormals: No triangle, no normal"
+      return []
     prims = []
     for v in @vertices
       line = new Line v.data[0].stripHomC(), v.data[2].normalizeC()
-      prims = prims.concat line.getLineSegC 0, length, color
+      @dbgVertexLines.push line
+      prims = prims.concat line.gfxAddLineSeg(0, 2, color)
     return prims
 
-  centroidNormalLinesDebug: (length = 2,
-                             color = new Vec 3, [0.0, 1.0, 0.0]) ->
+  dbgAddCentroidNormal: (length = 2, color = new Vec 3, [0.0, 1.0, 0.0]) ->
     if @vCount is not 3
-      window.dprint "No triangle, no normal"
+      window.dprint "dbgAddVertexNormals: No triangle, no normal"
+      return []
     centroid = new Vec 3
-    for v in @vertices
-      centroid.addVec v.data[0].stripHomC()
-    line = new Line centroid.multScalar(1.0 / 3.0),
-      @vertices[0].data[2].normalizeC()
-    return line.getLineSegC 0, length, color
+    centroid.addVec v.data[0].stripHomC() for v in @vertices
+    centroid.multScalar(1.0 / 3.0)
+    @dbgCentroidLine = new Line centroid, @vertices[0].data[2].normalizeC()
+    return @dbgCentroidLine.gfxAddLineSeg 0, length, color
 
 
 class window.Vertex

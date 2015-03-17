@@ -118,6 +118,7 @@ class window.Display
   executeDrawGL: ->
     GL.clear (GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT)
     Geom.debugTotalDrawCalls = 0 # debug
+    Geom.debugTotalUpdates = 0 #debug
     @_scenes[@_currentScene].delegateDrawGL()
     return
 
@@ -126,7 +127,6 @@ class window.Display
     @compTime()
     @resetDprint()
     window.camera.doLogic @_delta
-    Geom.debugTotalUpdates = 0 # debug
     @_scenes[@_currentScene].delegateDoLogic @_delta
     window.input.reset()
     return
