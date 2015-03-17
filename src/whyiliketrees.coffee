@@ -14,24 +14,24 @@ class window.Display
     @width = 600
     @height = 400
 
-    @_last = new Date().getTime()
-    @_delta = 0
-    @_deltaItv = 200
-    @_deltaAcm = 200
-    @_cameraItv = 200
-    @_cameraAcm = 200
-    @_dprintItv = 1000
-    @_dprintAcm = 1000
+    @last = new Date().getTime()
+    @delta = 0
+    @deltaItv = 200
+    @deltaAcm = 200
+    @cameraItv = 200
+    @cameraAcm = 200
+    @dprintItv = 1000
+    @dprintAcm = 1000
 
-    @_deltaAvgItv = 5000
-    @_deltaAvgAcm = 5000
+    @deltaAvgItv = 5000
+    @deltaAvgAcm = 5000
 
-    @_ticks = 0
-    @_deltaSum = 0
-    @_deltaAvg = 0
+    @ticks = 0
+    @deltaSum = 0
+    @deltaAvg = 0
 
-    @_scenes = []
-    @_currentScene = 0
+    @scenes = []
+    @currentScene = 0
 
   initGL: (canvas) ->
     canvas.setAttribute("width", @width)
@@ -56,78 +56,77 @@ class window.Display
   initGame: ->
     window.input = new Input canvas
     window.camera = new Camera
-    @_scenes.push new TestScene
-    window.setInfo 1, "Current Scene: [" + @_currentScene + ", " +
-      @_scenes[@_currentScene].debugName + "]"
+    @scenes.push new TestScene
+    window.dbgSetInfo 1, "Current Scene: [" + @currentScene + ", " +
+      @scenes[@currentScene].debugName + "]"
     return
 
   compTime: ->
     date = new Date()
-    @_delta = date.getTime() - @_last
-    @_last = date.getTime()
-    @_deltaAcm += @_delta
-    @_cameraAcm += @_delta
-    @_deltaAvgAcm += @_delta
-    @_ticks++
-    @_deltaSum += @_delta
+    @delta = date.getTime() - @last
+    @last = date.getTime()
+    @deltaAcm += @delta
+    @cameraAcm += @delta
+    @deltaAvgAcm += @delta
+    @ticks++
+    @deltaSum += @delta
 
-    if @_deltaAcm >= @_deltaItv
-      window.setInfo 3, @_delta + "ms delta  [" +
-        (@_deltaAvg + "").substring(0, 4) + "ms]"
-      @_deltaAcm = 0
+    if @deltaAcm >= @deltaItv
+      window.dbgSetInfo 3, @delta + "ms delta  [" +
+        (@deltaAvg + "").substring(0, 4) + "ms]"
+      @deltaAcm = 0
       @setGeomDebugInfo() # should not be here but lazy
 
-    if @_deltaAvgAcm >= @_deltaAvgItv
-      @_deltaAvg = @_deltaSum / @_ticks
-      window.setInfo 3, @_delta + "ms delta  [" +
-        (@_deltaAvg + "").substring(0, 4) + "ms]"
-      @_deltaAvgAcm = 0
-      @_ticks = 0
-      @_deltaSum = 0
+    if @deltaAvgAcm >= @deltaAvgItv
+      @deltaAvg = @deltaSum / @ticks
+      window.dbgSetInfo 3, @delta + "ms delta  [" +
+        (@deltaAvg + "").substring(0, 4) + "ms]"
+      @deltaAvgAcm = 0
+      @ticks = 0
+      @deltaSum = 0
 
-    if @_cameraAcm >= @_cameraItv
-      window.setInfo 5, "Camera " + window.camera.posToString()
-      @_cameraAcm = 0
+    if @cameraAcm >= @cameraItv
+      window.dbgSetInfo 5, "Camera " + window.camera.posToString()
+      @cameraAcm = 0
     return
-
   checkScene: ->
     for i in [49..57]
       if input.keyPressed i
         ind = i - 49
-        if ind < @_scenes.length
-          @_currentScene = ind
-          window.setInfo 1, "Current Scene: [" + ind + ", " +
-            @_scenes[@_currentScene].debugName + "]"
+        if ind < @scenes.length
+          @currentScene = ind
+          window.dbgSetInfo 1, "Current Scene: [" + ind + ", " +
+            @scenes[@currentScene].debugName + "]"
         else
           dprint "No Scene available for [" + ind + "]   :("
     return
 
-  resetDprint: ->
-    if @_dprintAcm >= @_dprintItv
+  dbgResetConsole: ->
+    if @dprintAcm >= @dprintItv
       window._knownLines = []
-      @_dprintAcm = 0
-    @_dprintAcm += @_delta
+      @dprintAcm = 0
+    @dprintAcm += @delta
     return
 
   setGeomDebugInfo: ->
-    window.setInfo 2, "Primitive count: " + Geom.debugTotalPrimCount
-    window.setInfo 4, "Draw calls: " + Geom.debugTotalDrawCalls
-    window.setInfo 6, "Subbuffer updates: " + Geom.debugTotalUpdates
+    window.dbgSetInfo 2, "Primitive count: " + Geom.debugTotalPrimCount
+    window.dbgSetInfo 4, "Draw calls: " + Geom.debugTotalDrawCalls
+    window.dbgSetInfo 6, "Subbuffer updates: " + Geom.debugTotalUpdates
     return
 
   executeDrawGL: ->
     GL.clear (GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT)
     Geom.debugTotalDrawCalls = 0 # debug
     Geom.debugTotalUpdates = 0 #debug
-    @_scenes[@_currentScene].delegateDrawGL()
+    @scenes[@currentScene].delegateDrawGL()
     return
 
   executeDoLogic: ->
     @checkScene()
     @compTime()
-    @resetDprint()
-    window.camera.doLogic @_delta
-    @_scenes[@_currentScene].delegateDoLogic @_delta
+    @dbgResetConsole()
+    window.camera.doLogic @delta
+    @scenes[@currentScene].delegateDoLogic @delta
     window.input.reset()
     return
 

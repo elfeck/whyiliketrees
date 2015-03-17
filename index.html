@@ -16,7 +16,6 @@
      margin-top: 50px;
    }
    div#main {
-
    }
    canvas#canvas {
      border-width: 1px;
@@ -54,30 +53,34 @@
      font-family: inherit;
      font-size: 11px;
      text-align: center;
-     color: #777777
+     color: #777777;
    }
-
+   div.inf1 {
+     float: left;
+     width: 60%;
+   }
+   div.inf2 {
+     overflow: hidden;
+     width: 40%;
+     text-align: right;
+   }
   </style>
 </head>
-
 <html>
   <body>
     <div id="main">
-       <div style="float: left; width: 60%" class="inf" id="info1"></div>
-      <div style="overflow: hidden; width: 40%; text-align: right;"
-	   class="inf" id="info2"></div>
-      <div style="float: left; width: 60%" class="inf" id="info3"></div>
-      <div style="overflow: hidden; width: 40%; text-align: right;"
-	   class="inf" id="info4"></div>
-      <div style="float: left; width: 60%" class="inf" id="info5"></div>
-      <div style="overflow: hidden; width: 40%; text-align: right;"
-	   class="inf" id="info6"></div>
+      <div class="inf inf1" id="info1"></div>
+      <div class="inf inf2" id="info2"></div>
+      <div class="inf inf1" id="info3"></div>
+      <div class="inf inf2" id="info4"></div>
+      <div class="inf inf1" id="info5"></div>
+      <div class="inf inf2" id="info6"></div>
       <canvas id="canvas"></canvas>
       <textarea readonly id="console"></textarea>
       <div class="controls" style="margin-top: 3px">
 	Controls: WASD, Space, Space+Shift, Arrow Keys<br>
       </div>
-      <div class="controls" id="info3" style="font-size: 10px">
+      <div class="controls" id="info7" style="font-size: 10px">
 	Toggle Debug: P<br>
 	Toggle Mouse Drag Controlled Camera Angle: I<br>
       </div>

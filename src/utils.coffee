@@ -28,7 +28,7 @@ window.dprint = (msg) ->
     window._knownLines.push msg
     return
 
-window.setInfo = (i, msg) ->
+window.dbgSetInfo = (i, msg) ->
   return if not window.debug
   document.getElementById("info" + i).innerHTML = msg
   return
@@ -36,22 +36,15 @@ window.setInfo = (i, msg) ->
 window.toggleDebug = ->
   window.debug = not window.debug
   window.wireFrame = false
+  infCount = 7
   if window.debug
     document.getElementById("console").style.display = "block"
-    document.getElementById("info1").style.color = "#666666"
-    document.getElementById("info2").style.color = "#666666"
-    document.getElementById("info3").style.color = "#666666"
-    document.getElementById("info4").style.color = "#666666"
-    document.getElementById("info5").style.color = "#666666"
-    document.getElementById("info6").style.color = "#666666"
+    for i in [1..infCount]
+      document.getElementById("info" + i).style.color = "#666666"
   else
     document.getElementById("console").style.display = "none"
-    document.getElementById("info1").style.color = "transparent"
-    document.getElementById("info2").style.color = "transparent"
-    document.getElementById("info3").style.color = "transparent"
-    document.getElementById("info4").style.color = "transparent"
-    document.getElementById("info5").style.color = "transparent"
-    document.getElementById("info6").style.color = "transparent"
+    for i in [1..infCount]
+      document.getElementById("info" + i).style.color = "transparent"
   return
 
 window.getShaderAttributes = (vertSrc) ->

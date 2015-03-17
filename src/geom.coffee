@@ -4,22 +4,22 @@ class window.Geom
   @debugTotalDrawCalls = 0
   @debugTotalUpdates = 0
 
-  constructor: (@_layout) ->
-    @_datasets = []
-    @_vb = undefined
-    @_ib = undefined
-    @_modified = false
-    @_stride = 0
-    @_stride += s for s in @_layout
+  constructor: (@layout) ->
+    @datasets = []
+    @vb = undefined
+    @ib = undefined
+    @modified = false
+    @stride = 0
+    @stride += s for s in @layout
 
   initGL: ->
-    @_vb = GL.createBuffer()
-    @_ib = GL.createBuffer()
+    @vb = GL.createBuffer()
+    @ib = GL.createBuffer()
     return
 
   drawGL: () ->
     @bindGL()
-    for d in @_datasets
+    for d in @datasets
       continue if not d.visible
       Geom.debugTotalDrawCalls++
       d.program.bindGL()
@@ -32,77 +32,77 @@ class window.Geom
     return
 
   uploadGL: ->
-    GL.bindBuffer GL.ARRAY_BUFFER, @_vb
+    GL.bindBuffer GL.ARRAY_BUFFER, @vb
     GL.bufferData GL.ARRAY_BUFFER, new Float32Array(@fetchAllVertexData()),
       GL.STATIC_DRAW
     GL.bindBuffer GL.ARRAY_BUFFER, null
 
-    GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, @_ib
+    GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, @ib
     GL.bufferData GL.ELEMENT_ARRAY_BUFFER, new Int16Array(@fetchIndexData()),
       GL.STATIC_DRAW
     GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, null
-    @_modified = false
+    @modified = false
     return
 
   updateGL: () ->
-    return if @_datasets.length == 0
-    if @_modified
+    return if @datasets.length == 0
+    if @modified
       Geom.debugTotalUpdates++
       @uploadGL()
       return
-    minInd = @_datasets.length
+    minInd = @datasets.length
     maxInd = -1
-    for i in [0..@_datasets.length-1]
-      d = @_datasets[i]
+    for i in [0..@datasets.length-1]
+      d = @datasets[i]
       if d.modified
         minInd = Math.min(minInd, i)
         maxInd = Math.max(maxInd, i)
     if maxInd > -1
       Geom.debugTotalUpdates++
-      GL.bindBuffer GL.ARRAY_BUFFER, @_vb
-      GL.bufferSubData GL.ARRAY_BUFFER, @_datasets[minInd].vOffs * 4,
+      GL.bindBuffer GL.ARRAY_BUFFER, @vb
+      GL.bufferSubData GL.ARRAY_BUFFER, @datasets[minInd].vOffs * 4,
         new Float32Array(@fetchModVertexData(minInd, maxInd))
-      #dprint "Updating Geom VBO from " + @_datasets[minInd].vOffs * 4 +
+      #dprint "Updating Geom VBO from " + @datasets[minInd].vOffs * 4 +
       #  " to " +
-      #  (@_datasets[maxInd].vOffs + @_datasets[maxInd].getICount()) * 4
+      #  (@datasets[maxInd].vOffs + @datasets[maxInd].getICount()) * 4
       GL.bindBuffer GL.ARRAY_BUFFER, null
-    d.modified = false for d in @_datasets
+    d.modified = false for d in @datasets
     return
 
   addData: (geomData) ->
     Geom.debugTotalPrimCount += geomData.getPrimCount() #debug
-    @_modified = true
-    @_datasets.push geomData
+    @modified = true
+    @datasets.push geomData
     iOffs = 0
-    for ds in @_datasets
+    for ds in @datasets
       ds.iOffs = iOffs
-      ds.vOffs = iOffs * @_stride
+      ds.vOffs = iOffs * @stride
       iOffs += ds.getICount()
     return
 
   fetchAllVertexData: ->
     vRaw = []
-    ds.fetchVertexData vRaw for ds in @_datasets
+    ds.fetchVertexData vRaw for ds in @datasets
     return vRaw
 
   fetchModVertexData: (minInd, maxInd) ->
     vRaw = []
-    @_datasets[i].fetchVertexData vRaw for i in [minInd..maxInd]
+    @datasets[i].fetchVertexData vRaw for i in [minInd..maxInd]
     return vRaw
 
   fetchIndexData: ->
     iRaw = []
     offs = 0
-    offs = ds.fetchIndexData iRaw, offs for ds in @_datasets
+    offs = ds.fetchIndexData iRaw, offs for ds in @datasets
     return iRaw
 
   bindGL: ->
-    @uploadGL() if @_modified
-    GL.bindBuffer GL.ARRAY_BUFFER, @_vb
-    GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, @_ib
-    GL.enableVertexAttribArray i for i in [0..@_layout.length-1]
+    @uploadGL() if @modified
+    GL.bindBuffer GL.ARRAY_BUFFER, @vb
+    GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, @ib
+    GL.enableVertexAttribArray i for i in [0..@layout.length-1]
     offs = 0
-    for own index, size of @_layout
+    for own index, size of @layout
       @setAttribGL index, size, offs
       offs += size
     return
@@ -110,11 +110,11 @@ class window.Geom
   unbindGL: ->
     GL.bindBuffer GL.ARRAY_BUFFER, null
     GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, null
-    GL.disableVertexAttribArray i for i in [0..@_layout.length-1]
+    GL.disableVertexAttribArray i for i in [0..@layout.length-1]
     return
 
   setAttribGL: (i, s, offs) ->
-    GL.vertexAttribPointer i, s, GL.FLOAT, false, @_stride * 4, offs * 4
+    GL.vertexAttribPointer i, s, GL.FLOAT, false, @stride * 4, offs * 4
     return
 
 

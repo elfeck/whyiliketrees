@@ -1,8 +1,8 @@
 class window.Input
 
   constructor: () ->
-    @_keys = (false for [1..255])
-    @_canvas = document.getElementById "canvas"
+    @keys = (false for [1..255])
+    @canvas = document.getElementById "canvas"
 
     @mouseX = undefined
     @mouseY = undefined
@@ -11,9 +11,9 @@ class window.Input
     @mouseDx = 0
     @mouseDy = 0
 
-    rect = @_canvas.getBoundingClientRect()
-    @_offsleft = rect.left + document.body.scrollLeft
-    @_offstop = rect.top + document.body.scrollTop
+    rect = @canvas.getBoundingClientRect()
+    @offsleft = rect.left + document.body.scrollLeft
+    @offstop = rect.top + document.body.scrollTop
 
     window.onkeydown = (event) => @handleKeyDown event
     window.onkeyup = (event) => @handleKeyUp event
@@ -22,18 +22,18 @@ class window.Input
     window.onmouseup = (event) => @handleMouseUp event
 
   handleKeyDown: (event) ->
-    @_keys[event.keyCode] = true
+    @keys[event.keyCode] = true
     #console.log event.keyCode
     return
 
   handleKeyUp: (event) ->
-    @_keys[event.keyCode] = false
+    @keys[event.keyCode] = false
     @handleSpecialKeys(event.keyCode)
     return
 
   handleMouseMove: (event) ->
-    x = event.pageX - @_offsleft
-    y = event.pageY - @_offstop
+    x = event.pageX - @offsleft
+    y = event.pageY - @offstop
     if @mouseX? and @mouseY?
       @mouseDx = -(@mouseX - x)
       @mouseDy = (@mouseY - y)
@@ -56,7 +56,7 @@ class window.Input
     return
 
   keyPressed: (keyCode) ->
-    return @_keys[keyCode]
+    return @keys[keyCode]
 
   reset: ->
     @mouseDx = 0

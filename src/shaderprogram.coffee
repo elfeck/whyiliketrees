@@ -1,41 +1,41 @@
 class window.ShaderProgram
 
-  constructor: (@_vertSrc, @_fragSrc) ->
-    @_vert = undefined
-    @_frag = undefined
-    @_program = undefined
-    @_uniforms = []
+  constructor: (@vertSrc, @fragSrc) ->
+    @vert = undefined
+    @frag = undefined
+    @program = undefined
+    @uniforms = []
 
   initGL: ->
-    @_vert = GL.createShader GL.VERTEX_SHADER
-    GL.shaderSource @_vert, @_vertSrc
-    GL.compileShader @_vert
-    if not GL.getShaderParameter @_vert, GL.COMPILE_STATUS
+    @vert = GL.createShader GL.VERTEX_SHADER
+    GL.shaderSource @vert, @vertSrc
+    GL.compileShader @vert
+    if not GL.getShaderParameter @vert, GL.COMPILE_STATUS
       console.log "Error in compile shader :vert: \n" +
-        GL.getShaderInfoLog @_vert
+        GL.getShaderInfoLog @vert
 
-    @_frag = GL.createShader GL.FRAGMENT_SHADER
-    GL.shaderSource @_frag, @_fragSrc
-    GL.compileShader @_frag
-    if not GL.getShaderParameter @_frag, GL.COMPILE_STATUS
+    @frag = GL.createShader GL.FRAGMENT_SHADER
+    GL.shaderSource @frag, @fragSrc
+    GL.compileShader @frag
+    if not GL.getShaderParameter @frag, GL.COMPILE_STATUS
       console.log "Error in compile shader :frag: \n" +
-        GL.getShaderInfoLog @_frag
+        GL.getShaderInfoLog @frag
 
-    @_program = GL.createProgram()
+    @program = GL.createProgram()
 
-    attribNames = window.getShaderAttributes @_vertSrc
+    attribNames = window.getShaderAttributes @vertSrc
     for i in [0..attribNames-1]
-      GL.bindAttribLocation @_program, i, attribNames[i]
+      GL.bindAttribLocation @program, i, attribNames[i]
 
-    GL.attachShader @_program, @_vert
-    GL.attachShader @_program, @_frag
-    GL.linkProgram @_program
-    if not GL.getProgramParameter @_program, GL.LINK_STATUS
-      console.log "Error in link program \n" + GL.getProgramInfoLog @_program
+    GL.attachShader @program, @vert
+    GL.attachShader @program, @frag
+    GL.linkProgram @program
+    if not GL.getProgramParameter @program, GL.LINK_STATUS
+      console.log "Error in link program \n" + GL.getProgramInfoLog @program
     return
 
   bindGL: ->
-    GL.useProgram @_program
+    GL.useProgram @program
     return
 
   unbindGL: ->
@@ -43,7 +43,7 @@ class window.ShaderProgram
     return
 
   uploadUniformsGL: (id) ->
-    for uni in @_uniforms
+    for uni in @uniforms
       uni.uniform.asUniformGL uni.location if id == uni.id
 
   addUniformGL: (id, name, uniform) ->
@@ -51,6 +51,6 @@ class window.ShaderProgram
       id: id
       name: name #debug
       uniform: uniform
-      location: GL.getUniformLocation @_program, name
-    @_uniforms.push uni
+      location: GL.getUniformLocation @program, name
+    @uniforms.push uni
     return

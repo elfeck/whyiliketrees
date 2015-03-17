@@ -1,7 +1,7 @@
 class window.Line
 
   constructor: (@base, @dir) ->
-    @_lineSegs = []
+    @lineSegs = []
 
   gfxAddLineSeg: (bdist, length, color) ->
     p1 = @pointAtDistanceC(bdist).toHomVecC()
@@ -10,13 +10,13 @@ class window.Line
       bdist: bdist
       length: length
       points: [p1, p2]
-    @_lineSegs.push lineSeg
+    @lineSegs.push lineSeg
     verts = [new Vertex([p1, color]), new Vertex([p2, color])]
     prim = new Primitive 2, verts
     return [prim]
 
   updateLineSegs: () ->
-    for ls in @_lineSegs
+    for ls in @lineSegs
       ls.points[0].setTo(@base).addVec(@dir.multScalarC(ls.bdist)).toHomVec()
       ls.points[1].setTo(@base).addVec(@dir.multScalarC(ls.bdist + ls.length))
       ls.points[1].toHomVec()
