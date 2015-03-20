@@ -56,6 +56,7 @@ class window.Display
   initGame: ->
     window.input = new Input canvas
     window.camera = new Camera
+    window.initShadersGL()
     @scenes.push new TestScene
     window.dbgSetInfo 1, "Current Scene: [" + @currentScene + ", " +
       @scenes[@currentScene].debugName + "]"

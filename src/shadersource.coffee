@@ -1,8 +1,18 @@
+window.shaders = []
+window.initShadersGL = ->
+  window.shaders["lineShader"] = new ShaderProgram lineVert, lineFrag
+  window.shaders["lineShader"].initGL()
+
+  window.shaders["fillShader"] = new ShaderProgram fillVert, fillFrag
+  window.shaders["fillShader"].initGL()
+  return
+
+
 # ###########
 # Line Shader
 # ###########
 
-window.colLineVert = "
+lineVert = "
 #version 100\n
 precision mediump float;\n
 
@@ -20,7 +30,7 @@ void main() {\n
 }\n
 "
 
-window.colLineFrag = "
+lineFrag = "
 #version 100\n
 precision mediump float;\n
 
@@ -31,11 +41,12 @@ void main() {\n
 }\n
 "
 
+
 # ###########
 # Area Shader
 # ###########
 
-window.colFillVert = "
+fillVert = "
 #version 100\n
 precision mediump float;\n
 
@@ -59,7 +70,7 @@ void main() {\n
 }\n
 "
 
-window.colFillFrag = "
+fillFrag = "
 #version 100\n
 precision mediump float;\n
 
