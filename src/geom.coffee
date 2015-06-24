@@ -62,11 +62,20 @@ class window.Geom
       GL.bindBuffer GL.ARRAY_BUFFER, @vb
       GL.bufferSubData GL.ARRAY_BUFFER, @datasets[minInd].vOffs * 4,
         new Float32Array(@fetchModVertexData(minInd, maxInd))
-      #dprint "Updating Geom VBO from " + @datasets[minInd].vOffs * 4 +
-      #  " to " +
-      #  (@datasets[maxInd].vOffs + @datasets[maxInd].getICount()) * 4
+      #@dbgPrintUpdate minInd, maxInd
       GL.bindBuffer GL.ARRAY_BUFFER, null
     d.modified = false for d in @datasets
+    return
+
+  dbgPrintUpdate: (minInd, maxInd) ->
+    msg = "Updating Geom VBO from " + @datasets[minInd].vOffs * 4 +
+      " to " +
+      (@datasets[maxInd].vOffs + @datasets[maxInd].getICount()) * 4 +
+      " (of " +
+      (@datasets[@datasets.length-1].vOffs +
+      @datasets[@datasets.length-1].getICount()) * 4 +
+      ")"
+    dprint msg
     return
 
   addData: (geomData) ->

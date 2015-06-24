@@ -37,7 +37,6 @@ class window.TestScene
       new TestPlatform this
     ]
 
-
   delegateDrawGL: ->
     @lineGeom.updateGL()
     @fillGeom.updateGL()
