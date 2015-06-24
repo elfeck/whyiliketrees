@@ -1,7 +1,7 @@
 class window.Vec
 
   constructor: (@dim, @data = [], @asHom = false) ->
-    (@data.push 0.0 for i in [1..dim]) if @data.length == 0
+    (@data.push 0.0 for i in [1..@dim]) if @data.length == 0
 
   copy: ->
     return new Vec @dim, @data.slice(), @asHom
