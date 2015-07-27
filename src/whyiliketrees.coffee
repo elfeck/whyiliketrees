@@ -31,7 +31,7 @@ class window.Display
     @deltaAvg = 0
 
     @scenes = []
-    @currentScene = 0
+    @currentScene = 1
 
   initGL: (canvas) ->
     canvas.setAttribute("width", @width)
@@ -58,6 +58,7 @@ class window.Display
     window.camera = new Camera
     window.initShadersGL()
     @scenes.push new TestScene
+    @scenes.push new SpikyScene
     window.dbgSetInfo 1, "Current Scene: [" + @currentScene + ", " +
       @scenes[@currentScene].debugName + "]"
     return
@@ -90,6 +91,7 @@ class window.Display
       window.dbgSetInfo 5, "Camera " + window.camera.posToString()
       @cameraAcm = 0
     return
+
   checkScene: ->
     for i in [49..57]
       if input.keyPressed i

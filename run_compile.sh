@@ -1,2 +1,9 @@
 #!/bin/bash
-coffee -j whyiliketrees.js -w -c src/*.coffee src/test/*.coffee
+# old
+coffee -j whyiliketrees.js -w -c \
+       src/*.coffee \
+       src/test/*.coffee \
+       src/spiky/*.coffee
+
+# new
+# okay I know nothing
