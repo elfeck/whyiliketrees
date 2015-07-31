@@ -148,15 +148,13 @@ class window.Polygon
     return polys
 
   # minimum distance match points
-  @pConnectPolygons: (p1, p2) ->
-    normSign = 1.0
+  @pConnectPolygons: (p1, p2, normSign = 1.0) ->
     if p1.points.length <= p2.points.length
       poly1 = p1 # poly1 = smaller n = inner
       poly2 = p2 # poly2 = bigger n = outer
     else
       poly1 = p2
       poly2 = p1
-      normSign = -1.0
     p1s = poly1.points
     p2s = poly2.points
     #move them on top of each other

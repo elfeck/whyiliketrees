@@ -22,7 +22,7 @@ class window.Input
     window.onmouseup = (event) => @handleMouseUp event
 
   handleKeyDown: (event) ->
-    if event.keyCode == 32
+    if event.keyCode == 32 or event.which == 32
       event.preventDefault()
     @keys[event.keyCode] = true
     #console.log event.keyCode

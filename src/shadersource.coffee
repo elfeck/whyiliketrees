@@ -84,6 +84,7 @@ struct Light {\n
 
 uniform Light lights[max_lights];\n
 uniform vec3 light_attenu;\n
+uniform float num_lights;\n
 
 varying vec3 frag_pos;\n
 varying vec3 frag_col;\n
@@ -101,9 +102,10 @@ vec3 compLight() {\n
   float dist = 0.0;\n
   float att_factor = 0.0;\n
   float cos_ang = 0.0;\n
+  int num_l = int(num_lights);\n
 
   for(int i = 0; i < max_lights; ++i) {\n
-    if(lights[i].light_att == 0.0) break;\n
+    if(i >= int(num_lights)) break;\n
     light_dir = (lights[i].light_pos - frag_pos);\n
     dist = length(light_dir);\n
     att_factor = max(0.0, 1.0 - dist / lights[i].light_att);\n

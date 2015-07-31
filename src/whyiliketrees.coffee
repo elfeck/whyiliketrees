@@ -3,7 +3,7 @@ window.camera = undefined
 window.input = undefined
 window.display = undefined
 
-window.debug = true
+window.debug = false
 window.consoleLog = true
 window.mouseActive = false
 

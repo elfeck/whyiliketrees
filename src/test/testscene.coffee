@@ -1,6 +1,7 @@
 class window.TestScene
 
   constructor: ->
+    console.log("test")
     @debugName = "Test"
     @accTime = 0
 
@@ -24,6 +25,7 @@ class window.TestScene
     duid = getuid()
     dshader = window.shaders["fillShader"]
     dshader.addUniformGL duid, "offs", new Vec 3
+    dshader.addUniformGL duid, "num_lights", new Vec(1, [@pLights.length])
     window.camera.addToProgram dshader, duid
     @attenuLight.addToProgram dshader, duid
     pl.addToProgram dshader, duid for pl in @pLights

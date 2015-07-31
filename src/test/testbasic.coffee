@@ -25,15 +25,25 @@ class TestBasic
     window.camera.addToProgram @shader, @uid
     scene.attenuLight.addToProgram @shader, @uid
     pl.addToProgram @shader, @uid for pl in scene.pLights
+
+    @lshader = window.shaders["lineShader"]
+    @lshader.addUniformGL @uid, "offs", @offs
+    window.camera.addToProgram @lshader, @uid
     return
 
   initGfx: (scene) ->
     prims = []
+    lprims = []
     prims = prims.concat @poly1.gfxAddFill @color
     prims = prims.concat @poly2.gfxAddFill @color
     prims = prims.concat p.gfxAddFill @color for p in @polys
 
+    for prim in prims
+      lprims = lprims.concat prim.dbgAddCentroidNormal()
+
     @ds = new GeomData @uid, @shader, prims, GL.TRIANGLES
+    @lds = new GeomData @uid, @lshader, lprims, GL.LINES
+    #scene.lineGeom.addData @lds
     scene.fillGeom.addData @ds
     return
 

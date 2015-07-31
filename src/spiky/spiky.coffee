@@ -1,41 +1,68 @@
 class window.Spiky
 
-  constructor: (scene) ->
+  constructor: (scene, @offs) ->
     @uid = window.getuid()
-    @color = new Vec 3, [0.3, 1.0, 0.3]
-    @offs = new Vec 3, [-10, 0, 0]
+    @color = new Vec 3, [1.0, 0.3, 0.3]
+    @wcolor = new Vec 3, [1.0, 1.0, 1.0]
+
+    @stepNum = 5
+    @length = 20
 
     @initGeom()
     @initShader scene
     @initGfx scene
 
   initGeom: ->
-    @pline1 = new Line new Vec(3, [0.0, 0.0, 0.0]), new Vec(3, [0.0, 0.0, 1.0])
-    @pline2 = @pline1.shiftBaseC -5
+    @baseln = new Line new Vec(3, [0.0, 0.0, 0.0]), new Vec(3, [0.0, 1.0, 0.0])
+    @steplns = []
+    @stepply = []
+    @connply = []
 
-    @poly1 = Polygon.regularFromLine @pline1, 0.75, 3, -1.0
-    @poly2 = Polygon.regularFromLine @pline2, 2, 7
-    @poly2.rotateAroundLine @pline2, Math.PI / 7.0
-    @polys = Polygon.pConnectPolygons @poly1, @poly2
+    for i in [0..@stepNum - 1]
+      @steplns.push @baseln.shiftBaseC(i * (@length / (@stepNum - 1)))
+      r = Math.sqrt(i + 1)
+      @stepply.push Polygon.regularFromLine(@steplns[i], r, 4, -1.0)
+      @stepply[i].rotateAroundLine @baseln, i * (Math.PI / @length)
+
+    for i in [0..@stepply.length - 2]
+      @connply =
+        @connply.concat Polygon.pConnectPolygons(@stepply[i], @stepply[i + 1],
+          -1.0)
+
     return
 
   initShader: (scene) ->
-    @shader = window.shaders["fillShader"]
-    @shader.addUniformGL @uid, "offs", @offs
-    window.camera.addToProgram @shader, @uid
-    scene.attenuLight.addToProgram @shader, @uid
-    scene.pLight.addToProgram @shader, @uid
+    scene.lineshader.addUniformGL @uid, "offs", @offs
+    window.camera.addToProgram scene.lineshader, @uid
+
+    scene.fillshader.addUniformGL @uid, "offs", @offs
+    scene.fillshader.addUniformGL @uid, "num_lights", new Vec(1, [4])
+    window.camera.addToProgram scene.fillshader, @uid
+    scene.attenuLight.addToProgram scene.fillshader, @uid
+    pl.addToProgram scene.fillshader, @uid for pl in scene.plights
     return
 
   initGfx: (scene) ->
-    prims = []
-    prims = prims.concat @poly1.gfxAddFill @color
-    prims = prims.concat @poly2.gfxAddFill @color
-    prims = prims.concat p.gfxAddFill @color for p in @polys
+    lprims = []
+    fprims = []
+    fprims = fprims.concat @stepply[0].gfxAddFill @color
+    fprims = fprims.concat @stepply[@stepply.length - 1].gfxAddFill @color
+    for ply in @connply
+      fprims = fprims.concat ply.gfxAddFill @color
+    for prim in fprims
+      lprims = lprims.concat prim.dbgAddCentroidNormal()
+    @fds = new GeomData @uid, scene.fillshader, fprims, GL.TRIANGLES
+    scene.fillGeom.addData @fds
 
-    @ds = new GeomData @uid, @shader, prims, GL.TRIANGLES
-    scene.fillGeom.addData @ds
+    @lds = new GeomData @uid, scene.lineshader, lprims, GL.LINES
+    #scene.lineGeom.addData @lds
+
+
     return
 
   doLogic: (delta) ->
     return
+
+  rotateBaseLine: (deg) ->
+    poly.rotateAroundLine @baseln, deg for poly in @stepply
+    @fds.setModified()
