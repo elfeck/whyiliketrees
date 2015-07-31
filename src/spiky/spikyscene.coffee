@@ -3,7 +3,7 @@ class window.SpikyScene
   constructor: ->
     console.log("spiky")
     @debugName = "Spiky"
-    window.camera.cameraPos.setData [0, -20, -40]
+    window.camera.cameraPos.setData [0, -10, -40]
 
     @lineGeom = new Geom [4, 3]
     @lineGeom.initGL()
