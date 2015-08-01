@@ -169,11 +169,13 @@ class window.Polygon
       cornerInd = Polygon.minDistToPair p1s, p2sm, fsti, sndi
       outers[fsti].push cornerInd
       outers[sndi].push cornerInd
+      console.log(fsti + " " + sndi + " " + cornerInd)
       polys.push new Polygon [p1s[fsti], p1s[sndi], p2s[cornerInd]], normSign
     # switch only first
     k = outers[0][0]
     outers[0][0] = outers[0][1]
     outers[0][1] = k
+    console.log(outers)
     for i in [0..p1s.length-1]
       bases = Polygon.getBases outers, i, p2s.length
       continue if bases.length == 0 # needed if n = n
@@ -236,7 +238,8 @@ class window.Polygon
       return newPoly
     axis = Vec.crossProd3(poly1.normal, newPoly.normal).normalize()
     rline = new Line newPoly.getCentroid(), axis
+    # might need multScalarC -1.0 for 180 deg flip fix now 1.0
     rangle = Math.acos(
-      Vec.scalarProd poly1.normal, newPoly.normal.multScalarC(-1.0))
+      Vec.scalarProd poly1.normal, newPoly.normal.multScalarC(1.0))
     newPoly.rotateAroundLine rline, rangle
     return newPoly

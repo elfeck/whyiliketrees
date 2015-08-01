@@ -1,0 +1,20 @@
+TODO
+=======================================
+
+--
+Geometry
+--
+(*) non-poly to poly connections
+
+
+--
+Graphics/Shader
+--
+(*) Particles
+(*) Some form of shadows
+
+
+--
+Other
+--
+(*) Fonts and text rendering

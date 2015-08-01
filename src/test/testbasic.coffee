@@ -13,8 +13,8 @@ class TestBasic
     @pline1 = new Line new Vec(3, [0.0, 0.0, 0.0]), new Vec(3, [0.0, 0.0, 1.0])
     @pline2 = @pline1.shiftBaseC -5
 
-    @poly1 = Polygon.regularFromLine @pline1, 0.75, 3, -1.0
-    @poly2 = Polygon.regularFromLine @pline2, 2, 7
+    @poly1 = Polygon.regularFromLine @pline1, 0.75, 4, -1.0
+    @poly2 = Polygon.regularFromLine @pline2, 2, 4
     @poly2.rotateAroundLine @pline2, Math.PI / 7.0
     @polys = Polygon.pConnectPolygons @poly1, @poly2
     return

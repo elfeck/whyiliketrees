@@ -13,7 +13,7 @@ class window.SpikyScene
     @lineshader = window.shaders["lineShader"]
     @fillshader = window.shaders["fillShader"]
 
-    a = 0.15
+    a = 0.4
     intens = new Vec(1, [35])
     lcol = new Vec(3, [1.0, 1.0, 1.0])
     d = 12
@@ -26,8 +26,9 @@ class window.SpikyScene
     @plights.push(new PointLight(new Vec(3, [-d, h, -d]), intens, 3, lcol))
 
     @entities = [
-      new SpikyFloor(this),
-      new Spiky(this, new Vec(3, [0, 0, 0]))
+      #new SpikyFloor(this),
+      #new Spiky(this, new Vec(3, [0, 0, 0]))
+      new Curly(this)
     ]
 
   delegateDrawGL: ->
@@ -39,6 +40,6 @@ class window.SpikyScene
 
   delegateDoLogic: (delta) ->
     e.doLogic delta for e in @entities
-    @entities[0].rotateBaseLine -delta * 0.00005 * Math.PI
-    @entities[1].rotateBaseLine -delta * 0.00005 * Math.PI
+    #@entities[0].rotateBaseLine -delta * 0.00005 * Math.PI
+    #@entities[1].rotateBaseLine -delta * 0.00005 * Math.PI
     return

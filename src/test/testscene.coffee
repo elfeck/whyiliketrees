@@ -30,13 +30,13 @@ class window.TestScene
     @attenuLight.addToProgram dshader, duid
     pl.addToProgram dshader, duid for pl in @pLights
 
-    dprims = dprims.concat pL.dbgAddCube 1 for pL in @pLights
+    #dprims = dprims.concat pL.dbgAddCube 1 for pL in @pLights
     @dd = new GeomData duid, dshader, dprims, GL.TRIANGLES
     @fillGeom.addData @dd
 
     @entities = [
       new TestBasic this
-      new TestPlatform this
+      #new TestPlatform this
     ]
 
   delegateDrawGL: ->
