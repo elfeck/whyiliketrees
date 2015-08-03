@@ -20,7 +20,7 @@ class window.SpikyFloor
 
   initShader: (scene) ->
     scene.fillshader.addUniformGL @uid, "offs", @offs
-    scene.fillshader.addUniformGL @uid, "num_lights", new Vec(1, [4])
+    scene.fillshader.addUniformGL @uid, "num_lights", new Vec(1, [2])
     window.camera.addToProgram scene.fillshader, @uid
     scene.attenuLight.addToProgram scene.fillshader, @uid
     pl.addToProgram scene.fillshader, @uid for pl in scene.plights

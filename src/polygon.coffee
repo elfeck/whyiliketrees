@@ -28,26 +28,127 @@ class window.Polygon
     @normal.multScalar @normalSign
     return
 
+  updateConnNormals: ->
+    poly.updateNormal() for poly in conn.polys for conn in @connections
+    return
+
   rotateAroundLine: (line, angle) ->
     line.rotatePoint p, angle for p in @points
     @updateNormal()
-    poly.updateNormal() for poly in conn.polys for conn in @connections
+    @updateConnNormals()
     return
 
   translatePoints: (dir) ->
     p.addVec dir for p in @points
     return
 
-  getCentroid: () ->
+  getCentroid: ->
     c = new Vec 3
     c.addVec p for p in @points
     return c.multScalar(1.0 / @points.length)
+
+  getPlane: ->
+    return Plane.fromPoints @points
+
+  # naive and bad runs in O(n^4). NOT tested for bad cases
+  # might not even be the min circle, but just one that contains all pts
+  getMinimalOutcircle: ->
+    circle = null
+    allWithin = true
+    for p1 in @points
+      for p2 in @points
+        for p3 in @points
+          continue if p1 == p2 || p2 == p3 || p1 == p3
+          circle = Circle.fromPoints [p1, p2, p3]
+          allWithin = true
+          allWithin &= circle.isPointWithin p for p in @points
+          return circle if allWithin
+    dprint "No Bounding Circle could be found"
+    return undefined
+
+  getMaximalIncircle: ->
+    # TODO
+
+  isPointInside: (point) ->
+    # TODO
 
   getCentroidAxis: (length, color) ->
     return new Line @getCentroid(), @normal.copy()
 
   getCentroidAxisDebug: (length, color) ->
     return @getCentroidAxis().getLineSegC 0, length, color
+
+  isRegular: (eps) ->
+    distri = new Vec @points.length, @getCircularAngleDistribution()
+    regu = 2 * Math.PI / @points.length
+    reguvec = new Vec @points.length
+    reguvec.data[i] = regu for i in [0..@points.length-1]
+    return reguvec.subVec(distri).length() < eps
+
+  regularizeRel: (perc) ->
+    regu = 2 * Math.PI / @points.length
+    console.log "regu: " + regu
+    circle = @getMinimalOutcircle()
+    distri = @getCircularAngleDistribution()
+    # we dont want to move the last vertex at all
+    for i in [0..@points.length-2]
+      diff = perc * (regu - distri[i])
+      circle.baseline.rotatePoint(@points[i + 1], diff)
+      distri[i + 1] -= diff
+    @updateConnNormals()
+    return
+
+  regularizeAbs: (angle) ->
+    regu = 2 * Math.PI / @points.length
+    circle = @getMinimalOutcircle()
+    distri = @getCircularAngleDistribution()
+    # we dont want to move the last vertex at all
+    for i in [0..@points.length-2]
+      diff = Math.min angle, (regu - distri[i])
+      circle.baseline.rotatePoint(@points[i + 1], diff)
+      distri[i + 1] -= diff
+    @updateConnNormals()
+    return
+
+  movePointAlongCircleRel: (index, perc) ->
+    distri = @getCircularAngleDistribution()
+    circle = @getMinimalOutcircle()
+    angle = distri[index] * perc
+    circle.baseline.rotatePoint(@points[index], angle)
+    @updateConnNormals()
+    return
+
+  movePointAlongCircleAbs: (index, angle) ->
+    distri = @getCircularAngleDistribution()
+    circle = @getMinimalOutcircle()
+    angle = Math.min(distri[index], angle)
+    circle.baseline.rotatePoint(@points[index], angle)
+    @updateConnNormals()
+    return
+
+  getCircularAngleDistribution: () ->
+    allOn = true
+    circle = @getMinimalOutcircle()
+    allWithin = true
+    allWithin &= circle.isPointOn p for p in @points
+    if not allWithin
+      dprint "Unable to get angle distri. not all points ON circle outline"
+      return null
+    distri = []
+    for i in [0..@points.length-1]
+      ac = circle.baseline.base.subVecC(@points[i])
+      bc = circle.baseline.base.subVecC(@points[(i + 1) %% @points.length])
+      distri.push(Vec.angleBetween(ac, bc))
+    return distri
+
+  getAngles: () ->
+    angles = []
+    for i in [0..@points.length-1]
+      ba = @points[(i + 1) %% @points.length].subVecC @points[i]
+      bc = @points[(i + 1) %% @points.length].subVecC(
+        @points[(i + 2) %% @points.length])
+      angles.push(Vec.angleBetween(ba, bc))
+    return angles
 
   @regularFromLine: (line, cdist, n, normSign = 1.0) ->
     angle = 2.0 * Math.PI / n
@@ -169,13 +270,11 @@ class window.Polygon
       cornerInd = Polygon.minDistToPair p1s, p2sm, fsti, sndi
       outers[fsti].push cornerInd
       outers[sndi].push cornerInd
-      console.log(fsti + " " + sndi + " " + cornerInd)
       polys.push new Polygon [p1s[fsti], p1s[sndi], p2s[cornerInd]], normSign
     # switch only first
     k = outers[0][0]
     outers[0][0] = outers[0][1]
     outers[0][1] = k
-    console.log(outers)
     for i in [0..p1s.length-1]
       bases = Polygon.getBases outers, i, p2s.length
       continue if bases.length == 0 # needed if n = n

@@ -12,7 +12,7 @@ class Curly
     @lines = []
     @dists = []
     @points = []
-    for i in [2..18] by 0.25
+    for i in [2..18] by 0.5
       x = i * Math.sin(i)
       y = i * Math.cos(i)
       @points.push new Vec(3, [x, i, y])
@@ -21,14 +21,13 @@ class Curly
       @dists.push @points[i].distance(@points[i + 1])
     @polys = []
     for i in [0..@lines.length-1]
-      @polys.push Polygon.regularFromLine @lines[i], 2, 5
-      #console.log @lines[i]
-    #console.log p.data for p in @polys[0].points
-    #console.log("----")
-    #console.log p.data for p in @polys[1].points
+      sng = -1.0
+      sng = 1.0 if i == 0
+      @polys.push Polygon.regularFromLine @lines[i], 2, 5, sng
     @connp = []
     for i in [0..@polys.length-2]
-      @connp = @connp.concat Polygon.pConnectPolygons(@polys[i], @polys[i + 1])
+      @connp = @connp.concat Polygon.pConnectPolygons(@polys[i], @polys[i + 1],
+        -1.0)
 
   initGfx: (scene) ->
     scene.lineshader.addUniformGL @uid, "offs", @offs
@@ -49,6 +48,10 @@ class Curly
     pprims = []
     pprims = pprims.concat p.gfxAddFill(@color) for p in @polys
     pprims = pprims.concat p.gfxAddFill(@color) for p in @connp
+    #lprims = lprims.concat p.dbgAddCentroidNormal() for p in pprims
+
+    ds = new GeomData @uid, scene.lineshader, lprims, GL.LINES
+    scene.lineGeom.addData ds
     pds = new GeomData @uid, scene.fillshader, pprims, GL.TRIANGLES
     scene.fillGeom.addData pds
 

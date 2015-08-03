@@ -116,6 +116,11 @@ class window.Vec
     vRaw.push 1.0 if @asHom
     return
 
+  x: -> return @data[0]
+  y: -> return @data[1]
+  z: -> return @data[2]
+  w: -> return @data[3]
+
   # utility methods
   addVecC: (v) -> return @copy().addVec v
   subVecC: (v) -> return @copy().subVec v
@@ -170,3 +175,6 @@ class window.Vec
           w.data[j] = 1
       return w
     return undefined
+
+  @angleBetween: (a, b) ->
+    return Math.acos(Vec.scalarProd(a, b) / (a.length() * b.length()))

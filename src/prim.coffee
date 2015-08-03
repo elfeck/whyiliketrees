@@ -97,11 +97,43 @@ class window.Line
     return point
 
   rotatePointC: (point, angle) ->
-    return @rotatePoint point.copy(), point
+    return @rotatePoint point.copy(), angle
 
   @fromPoints: (p1, p2) ->
     return new Line p1.copy(), p2.subVecC(p1).normalize()
 
+  # http://paulbourke.net/geometry/pointlineplane/
+  # http://paulbourke.net/geometry/pointlineplane/calclineline.cs
+  @getIntersectionLine: (l1, l2) ->
+    p1 = l1.base
+    p3 = l2.base
+    p21 = l1.dir
+    p43 = l2.dir
+
+    p13 = l1.base.subVecC(l2.base)
+
+    d1343 = p13.x() * p43.x() + p13.y() * p43.y() + p13.z() * p43.z()
+    d4321 = p43.x() * p21.x() + p43.y() * p21.y() + p43.z() * p21.z()
+    d1321 = p13.x() * p21.x() + p13.y() * p21.y() + p13.z() * p21.z()
+    d4343 = p43.x() * p43.x() + p43.y() * p43.y() + p43.z() * p43.z()
+    d2121 = p21.x() * p21.x() + p21.y() * p21.y() + p21.z() * p21.z()
+
+    denom = d2121 * d4343 - d4321 * d4321
+    numer = d1343 * d4321 - d1321 * d4343
+    mua = numer / denom
+    mub = (d1343 + d4321 * (mua)) / d4343
+
+    rp1X = (p1.x() + mua * p21.x())
+    rp1Y = (p1.y() + mua * p21.y())
+    rp1Z = (p1.z() + mua * p21.z())
+    rp2X = (p3.x() + mub * p43.x())
+    rp2Y = (p3.y() + mub * p43.y())
+    rp2Z = (p3.z() + mub * p43.z())
+
+    rp1 = new Vec 3, [rp1X, rp1Y, rp1Z]
+    rp2 = new Vec 3, [rp2X, rp2Y, rp2Z]
+    line = Line.fromPoints(rp1, rp2)
+    return line
 
 class window.Plane
 
@@ -115,11 +147,18 @@ class window.Plane
     diff = Vec.scalarProd(point, @norm) + @getPlaneParam()
     return isFloatZero diff
 
+  # only for directional vectors, rotating around 0
+  orthogonalInPlane: (vec) ->
+    line = new Line(new Vec(3), @norm)
+    return line.rotatePointC vec, Math.PI * 0.5
+
   @fromPoints: (points) ->
     v1 = points[1].subVecC points[0]
     v2 = points[2].subVecC points[0]
     return new Plane points[0].copy(), Vec.crossProd3(v1, v2)
 
+  @fromLine: (line) ->
+    return new Plane line.base, line.dir
 
 class window.Cube
 
@@ -143,3 +182,46 @@ class window.Cube
     @polys[0].translatePoints diff
     @polys[1].translatePoints diff
     return
+
+class window.Circle
+
+  constructor: (@baseline, @radius) ->
+
+  isPointWithin: (point) ->
+    return @isPointInside(point) || @isPointOn(point)
+
+  isPointInside: (point) ->
+    plane = Plane.fromLine @baseline
+    return false if not plane.liesOnPlane point
+    return @baseline.base.distance(point) < @radius
+
+  isPointOn: (point) ->
+    plane = Plane.fromLine @baseline
+    if not plane.liesOnPlane point
+     # console.log "shit"
+      return false
+    diff = @baseline.base.distance(point) - @radius
+    #console.log diff
+    return isFloatZero diff
+
+  gfxAddOutline: (numLineSegs, color) ->
+    poly = Polygon.regularFromLine @baseline, @radius, numLineSegs
+    return poly.gfxAddOutline color
+
+  #http://stackoverflow.com/questions/26901540/arc-in-qgraphicsscene/
+  # 26903599#26903599
+  @fromPoints: (points) ->
+    a = points[0]
+    b = points[1]
+    c = points[2]
+    bc = c.subVecC(b)
+    ac = c.subVecC(a)
+    ba = a.subVecC(b)
+    plane = Plane.fromPoints points
+    r = Math.abs(bc.length() / (2 * Math.sin(Vec.angleBetween(ac, ba))))
+    o1 = plane.orthogonalInPlane(bc)
+    o2 = plane.orthogonalInPlane(ba)
+    b1 = new Line(b.addVecC(bc.multScalarC(0.5)), o1)
+    b2 = new Line(b.addVecC(ba.multScalarC(0.5)), o2)
+    base = Line.getIntersectionLine(b1, b2).base
+    return new Circle(new Line(base, plane.norm), r)

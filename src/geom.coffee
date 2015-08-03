@@ -89,6 +89,11 @@ class window.Geom
       iOffs += ds.getICount()
     return
 
+  removeData: (geomData) ->
+    Geom.debugTotalPrimCount -= geomData.getPrimCount()
+    @modified = true
+    # TODO
+
   fetchAllVertexData: ->
     vRaw = []
     ds.fetchVertexData vRaw for ds in @datasets
