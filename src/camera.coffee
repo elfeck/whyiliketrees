@@ -33,7 +33,7 @@ class window.Camera
       0.0, 0.0, -2.0 * n * f / (f - n), 0.0
     ])
 
-    @speed = 0.05
+    @speed = 0.025
     @rotSpeed = 0.0005 * Math.PI
 
   getVPMat: ->

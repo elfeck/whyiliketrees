@@ -1,6 +1,7 @@
 class window.Polygon
 
   constructor: (@points, @normalSign = 1) ->
+    @normal = null
     if @points.length > 2
       @normal = Vec.zeros 3
       @updateNormal()
@@ -82,19 +83,37 @@ class window.Polygon
       dprint "attempt to get minimal outcircle from point-type polygon"
       return null
     if @points.length == 2
-      # TODO
-      return null
+      return Circle.from2Points @points, @normal
     else
       circle = null
-      allWithin = true
-      for p1 in @points
-        for p2 in @points
-          for p3 in @points
-            continue if p1 == p2 || p2 == p3 || p1 == p3
-            circle = Circle.fromPoints [p1, p2, p3]
-            allWithin = true
-            allWithin &= circle.isPointWithin p for p in @points
-            return circle if allWithin
+      okay = true
+      n = @points.length - 1
+      eps = 0.001
+      for i in [0..n]
+        for j in [0..n]
+          for k in [0..n]
+            continue if i == j || j == k || i == k
+            p1 = @points[i]
+            p2 = @points[j]
+            p3 = @points[k]
+            if p1.distance(p2) < eps || p1.distance(p3) < eps ||
+               p2.distance(p3) < eps
+              continue
+            circle = Circle.from3Points [p1, p2, p3]
+            okay = true
+            okay &= circle.isPointWithin p for p in @points
+            return circle if okay
+      # find circle with 2 points only and normal as planenorm
+      for i in [0..n]
+        for j in [0..n]
+          continue if i == j
+          p1 = @points[i]
+          p2 = @points[j]
+          continue if p1.distance(p2) < eps #maybe max dist instead?
+          circle = Circle.from2Points [p1, p2], @normal
+          okay = true
+          okay &= circle.isPointWithin p for p in @points
+          return circle if okay
     dprint "No Bounding Circle could be found"
     return undefined
 

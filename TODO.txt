@@ -1,6 +1,9 @@
 TODO
 =======================================
 
+(*) Figure out why top is not showing
+(*) check if reconnect for linestage is neccessary
+
 --
 Geometry
 --

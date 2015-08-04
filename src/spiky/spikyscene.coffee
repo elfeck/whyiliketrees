@@ -26,21 +26,12 @@ class window.SpikyScene
     @plights.push(new PointLight(new Vec([-d, h, -d]), intens, 1, lcol))
 
     @entities = [
-      #new SpikyFloor(this),
+      new SpikyFloor(this),
       #new Spiky(this, new Vec([0, 0, 0]))
       #new Curly(this)
-      #new Growing(this)
-      new TestSpiky(this)
+      new Growing(this)
+      #new TestSpiky(this)
     ]
-
-    a = new Vec [1, 1, 0]
-    b = new Vec [2, 4, 0]
-    c = new Vec [5, 3, 0]
-    Circle.fromPoints([a,b,c])
-
-    l1 = new Line(new Vec([0, 0, 0]), new Vec([1, 0, 0]))
-    l2 = new Line(new Vec([0, 0, 0]), new Vec([0, 1, 0]))
-    Line.getIntersectionLine(l1, l2)
 
   delegateDrawGL: ->
     @fillGeom.dbgReset()

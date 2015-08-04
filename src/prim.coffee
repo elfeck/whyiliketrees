@@ -210,7 +210,7 @@ class window.Circle
 
   #http://stackoverflow.com/questions/26901540/arc-in-qgraphicsscene/
   # 26903599#26903599
-  @fromPoints: (points) ->
+  @from3Points: (points) ->
     a = points[0]
     b = points[1]
     c = points[2]
@@ -225,3 +225,11 @@ class window.Circle
     b2 = new Line(b.addVecC(ba.multScalarC(0.5)), o2)
     base = Line.getIntersectionLine(b1, b2).base
     return new Circle(new Line(base, plane.norm), r)
+
+  @from2Points: (points, planeNorm) ->
+    if points.length == 2
+      a = points[0]
+      b = points[1]
+      r = 0.5 * a.distance(b)
+      center = a.addVecC(b.subVecC(a).multScalar(0.5))
+      return new Circle(new Line(center, planeNorm), r)
