@@ -5,10 +5,11 @@ TODO
 Geometry
 --
 (*) Non-poly to poly connections
-(*) Add vertex to polygon (in animation)
-(*) Smaller poly from poly via inside-circle
 (*) Smaller poly from poly via point-check (i.e. take parts of side and compl)
 (*) when modifying connected polygons, reconnect if better match available
+
+(*) [difficult] Smoother, tesselated poly-poly connections
+(*) [difficult math] Smaller poly from poly via inside-circle
 
 --
 Graphics/Shader
@@ -21,5 +22,3 @@ Graphics/Shader
 Other
 --
 (*) Fonts and text rendering
-(*) Refactor vec (and mat) to allow non-dim constructor and make "empty" vector
-    static method or similar

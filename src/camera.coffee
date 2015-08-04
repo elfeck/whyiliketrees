@@ -1,13 +1,13 @@
 class window.Camera
 
   constructor: ->
-    @cameraPos = new Vec 3, [0, 0, 0]
+    @cameraPos = Vec.zeros 3
     # this is needed for x,y rotation axis. icamPos = -camPos
-    @icameraPos = new Vec 3, [0.0, 0.0, 0.0]
-    @cameraDir = new Vec 3, [1.0, 0.0, 1.0]
+    @icameraPos = new Vec [0.0, 0.0, 0.0]
+    @cameraDir = new Vec [1.0, 0.0, 1.0]
 
-    @xRotAxis = new Line @icameraPos, new Vec 3, [1.0, 0.0, 0.0]
-    @yRotAxis = new Line @icameraPos, new Vec 3, [0.0, 1.0, 0.0]
+    @xRotAxis = new Line @icameraPos, new Vec [1.0, 0.0, 0.0]
+    @yRotAxis = new Line @icameraPos, new Vec [0.0, 1.0, 0.0]
 
     @viewRotAngle = 0.0
     @xRotAngle = 0.0

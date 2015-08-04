@@ -112,9 +112,10 @@ class window.Display
     return
 
   setGeomDebugInfo: ->
-    window.dbgSetInfo 2, "Primitive count: " + Geom.debugTotalPrimCount
-    window.dbgSetInfo 4, "Draw calls: " + Geom.debugTotalDrawCalls
-    window.dbgSetInfo 6, "Subbuffer updates: " + Geom.debugTotalUpdates
+    geomInfo = @scenes[@currentScene].dbgGeomInfo()
+    window.dbgSetInfo 2, "Primitive count: " + geomInfo[0]
+    window.dbgSetInfo 4, "Draw calls: " + geomInfo[1]
+    window.dbgSetInfo 6, "Subbuffer updates: " + (geomInfo[2] + geomInfo[3])
     return
 
   executeDrawGL: ->

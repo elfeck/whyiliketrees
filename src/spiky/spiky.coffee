@@ -2,8 +2,8 @@ class window.Spiky
 
   constructor: (scene, @offs) ->
     @uid = window.getuid()
-    @color = new Vec 3, [1.0, 0.3, 0.3]
-    @wcolor = new Vec 3, [1.0, 1.0, 1.0]
+    @color = new Vec [1.0, 0.3, 0.3]
+    @wcolor = new Vec [1.0, 1.0, 1.0]
 
     @stepNum = 5
     @length = 20
@@ -13,7 +13,7 @@ class window.Spiky
     @initGfx scene
 
   initGeom: ->
-    @baseln = new Line new Vec(3, [0.0, 0.0, 0.0]), new Vec(3, [0.0, 1.0, 0.0])
+    @baseln = new Line new Vec([0.0, 0.0, 0.0]), new Vec([0.0, 1.0, 0.0])
     @steplns = []
     @stepply = []
     @connply = []
@@ -26,7 +26,7 @@ class window.Spiky
 
     for i in [0..@stepply.length - 2]
       @connply =
-        @connply.concat Polygon.pConnectPolygons(@stepply[i], @stepply[i + 1],
+        @connply.concat Polygon.connectPolygons(@stepply[i], @stepply[i + 1],
           -1.0)
 
     return
@@ -36,7 +36,7 @@ class window.Spiky
     window.camera.addToProgram scene.lineshader, @uid
 
     scene.fillshader.addUniformGL @uid, "offs", @offs
-    scene.fillshader.addUniformGL @uid, "num_lights", new Vec(1, [4])
+    scene.fillshader.addUniformGL @uid, "num_lights", new Vec([4])
     window.camera.addToProgram scene.fillshader, @uid
     scene.attenuLight.addToProgram scene.fillshader, @uid
     pl.addToProgram scene.fillshader, @uid for pl in scene.plights

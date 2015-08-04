@@ -1,40 +1,9 @@
 (:
 
-===============================================================================
-WHYILIKETREES
-===============================================================================
-(*) why i do like trees
-(*) no I do not know what this is
-(*) not quite recent versions might be hosted on
-    elfeck.com/games/whyiliketrees/index.html but no guarantee
-
-
-===============================================================================
-UPCOMING TODO
-===============================================================================
-(*) RefactOr, thanks
-
 -------------------------------------------------------------------------------
-(+) Clean up / Easy Debug Grahics
-(+) Clean up privite attrib / methods
-
-
-===============================================================================
-NOTES
-===============================================================================
-(*) Suffix C on a function name means this function creates copies of working
-    primitives / vecs instead of using by-reference, thus creating independent
-    new objects which will not be affected by any change but to themself
-
-    e.g.: (*) v1.addVecC v2 returns a new Vec = (v1 + v2)
-	  (*) line.getLineSegC [..] returns a line segement which is
-	      independent of the line itself
-
-(*) vec.asHom is intended to be used of math primitives, which have a gfx
-    (dependent) representation. asHom allows homogeneous coordinates which
-    having convinient 3-dim vectors for math calculations
-
-    e.g.: (*) Polygon.points
-
-(*) Prefix gfx means graphical related method/attribute
-(*) Prefix dbg means debug related method/attribute
+WHYILIKETREES
+-------------------------------------------------------------------------------
+(*) why i do like trees
+(*) not quite recent versions might be hosted on
+    elfeck.com/playwhyiliketrees but no guarantee
+(*) once in a while I might stream programming on twitch.tv/elfeck

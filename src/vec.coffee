@@ -1,10 +1,10 @@
 class window.Vec
 
-  constructor: (@dim, @data = [], @asHom = false) ->
-    (@data.push 0.0 for i in [1..@dim]) if @data.length == 0
+  constructor: (@data, @asHom = false) ->
+    @dim = @data.length
 
   copy: ->
-    return new Vec @dim, @data.slice(), @asHom
+    return new Vec @data.slice(), @asHom
 
   setData: (data) ->
     @data = data.slice()
@@ -76,7 +76,7 @@ class window.Vec
     newdata = @data.slice()
     newdata.push 0.0 if @dim <= 2
     newdata.push 1.0 if @dim <= 3
-    return new Vec(4, newdata)
+    return new Vec newdata
 
   fromHomVecC: ->
     if @dim != 4 and !@asHom
@@ -84,7 +84,7 @@ class window.Vec
       return undefined
     newdata = []
     newdata.push @data[i] for i in [0..2]
-    vec = new Vec 3, newdata
+    vec = new Vec newdata
     return vec.multScalar(1.0 / @data[3])
 
   stripHomC: ->
@@ -93,7 +93,7 @@ class window.Vec
       return undefined
     newdata = []
     newdata.push @data[i] for i in [0..2]
-    return new Vec 3, newdata
+    return new Vec newdata
 
   scalarProd: (v) ->
     if not @dim is v.dim
@@ -142,7 +142,7 @@ class window.Vec
     if u.dim != 3 or v.dim != 3
       window.dprint "invalid vector dims for crossProd3"
       return undefined
-    cprod = new Vec 3
+    cprod = Vec.zeros 3
     cprod.data[0] = u.data[1] * v.data[2] - u.data[2] * v.data[1]
     cprod.data[1] = u.data[2] * v.data[0] - u.data[0] * v.data[2]
     cprod.data[2] = u.data[0] * v.data[1] - u.data[1] * v.data[0]
@@ -154,7 +154,7 @@ class window.Vec
       return undefined
     u = Vec.subVec a, b
     v = Vec.subVec c, b
-    n = new Vec 3, [
+    n = new Vec [
       u.data[1] * v.data[2] - u.data[2] * v.data[1],
       u.data[2] * v.data[0] - u.data[0] * v.data[2],
       u.data[0] * v.data[1] - u.data[1] * v.data[0]
@@ -167,7 +167,7 @@ class window.Vec
       sum = 0
       (sum -= v.data[j] if j != i) for j in [0..v.dim-1]
       sum /= v.data[i]
-      w = new Vec v.dim
+      w = Vec.zeros v.dim
       for j in [0..v.dim-1]
         if j == i
           w.data[j] = sum
@@ -178,3 +178,17 @@ class window.Vec
 
   @angleBetween: (a, b) ->
     return Math.acos(Vec.scalarProd(a, b) / (a.length() * b.length()))
+
+  @zeros: (dim) ->
+    data = []
+    data.push 0 for i in [1..dim]
+    return new Vec data
+
+  @ones: (dim) ->
+    data = []
+    data.push 1 for i in [1..dim]
+    return new Vec data
+
+  @red: -> return new Vec [1, 0, 0]
+  @green: -> return new Vec [0, 1, 0]
+  @blue: -> return new Vec [0, 0, 1]

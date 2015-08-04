@@ -1,9 +1,5 @@
 class window.Geom
 
-  @debugTotalPrimCount = 0
-  @debugTotalDrawCalls = 0
-  @debugTotalUpdates = 0
-
   constructor: (@layout) ->
     @datasets = []
     @vb = undefined
@@ -11,6 +7,11 @@ class window.Geom
     @modified = false
     @stride = 0
     @stride += s for s in @layout
+    @size = 0
+
+    @dbgNumDraw = 0
+    @dbgNumUpdates = 0
+    @dbgNumUploads = 0
 
   initGL: ->
     @vb = GL.createBuffer()
@@ -21,7 +22,7 @@ class window.Geom
     @bindGL()
     for d in @datasets
       continue if not d.visible
-      Geom.debugTotalDrawCalls++
+      @dbgNumDraw++
       d.program.bindGL()
       d.program.uploadUniformsGL 0
       d.program.uploadUniformsGL d.id
@@ -42,12 +43,13 @@ class window.Geom
       GL.STATIC_DRAW
     GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, null
     @modified = false
+    @size = @getMomentarySize()
+    @dbgNumUploads++
     return
 
   updateGL: () ->
     return if @datasets.length == 0
-    if @modified
-      Geom.debugTotalUpdates++
+    if @modified || @size < @getMomentarySize()
       @uploadGL()
       return
     minInd = @datasets.length
@@ -58,11 +60,10 @@ class window.Geom
         minInd = Math.min(minInd, i)
         maxInd = Math.max(maxInd, i)
     if maxInd > -1
-      Geom.debugTotalUpdates++
+      @dbgNumUpdates++
       GL.bindBuffer GL.ARRAY_BUFFER, @vb
       GL.bufferSubData GL.ARRAY_BUFFER, @datasets[minInd].vOffs * 4,
         new Float32Array(@fetchModVertexData(minInd, maxInd))
-      #@dbgPrintUpdate minInd, maxInd
       GL.bindBuffer GL.ARRAY_BUFFER, null
     d.modified = false for d in @datasets
     return
@@ -78,8 +79,13 @@ class window.Geom
     dprint msg
     return
 
+  dbgReset: ->
+    @dbgNumDraw = 0
+    @dbgNumUpdates = 0
+    @dbgNumUploads = 0
+    return
+
   addData: (geomData) ->
-    Geom.debugTotalPrimCount += geomData.getPrimCount() #debug
     @modified = true
     @datasets.push geomData
     iOffs = 0
@@ -90,9 +96,9 @@ class window.Geom
     return
 
   removeData: (geomData) ->
-    Geom.debugTotalPrimCount -= geomData.getPrimCount()
     @modified = true
     # TODO
+    return
 
   fetchAllVertexData: ->
     vRaw = []
@@ -109,6 +115,11 @@ class window.Geom
     offs = 0
     offs = ds.fetchIndexData iRaw, offs for ds in @datasets
     return iRaw
+
+  getMomentarySize: ->
+    size = 0
+    size += d.getPrimCount() for d in @datasets
+    return size
 
   bindGL: ->
     @uploadGL() if @modified
@@ -148,10 +159,7 @@ class window.GeomData
     return @prims.length * @prims[0].vCount
 
   getPrimCount: ->
-    m = 1 if @mode == GL.POINTS
-    m = 2 if @mode == GL.LINES
-    m = 3 if @mode == GL.TRIANGLES
-    return @getICount() / m
+    return @prims.length
 
   dbgUpdate: ->
     p.dbgUpdate() for p in @prims
@@ -186,14 +194,14 @@ class window.Primitive
         @dbgVertexLines[i].setBase @vertices[i].data[0].stripHomC()
         @dbgVertexLines[i].setDir @vertices[i].data[2].normalizeC()
     if @dbgCentroidLine?
-      centroid = new Vec 3
+      centroid = Vec.zeros 3
       centroid.addVec v.data[0].stripHomC() for v in @vertices
       centroid.multScalar(1.0 / 3.0)
       @dbgCentroidLine.setBase centroid
       @dbgCentroidLine.setDir @vertices[0].data[2].normalizeC()
     return
 
-  dbgAddVertexNormals: (length = 2, color = new Vec(3, [0.0, 1.0, 0.0])) ->
+  dbgAddVertexNormals: (length = 2, color = new Vec([0.0, 1.0, 0.0])) ->
     if @vCount is not 3
       window.dprint "dbgAddVertexNormals: No triangle, no normal"
       return []
@@ -204,11 +212,11 @@ class window.Primitive
       prims = prims.concat line.gfxAddLineSeg(0, 2, color)
     return prims
 
-  dbgAddCentroidNormal: (length = 2, color = new Vec 3, [0.0, 1.0, 0.0]) ->
+  dbgAddCentroidNormal: (length = 2, color = new Vec [0.0, 1.0, 0.0]) ->
     if @vCount is not 3
       window.dprint "dbgAddVertexNormals: No triangle, no normal"
       return []
-    centroid = new Vec 3
+    centroid = Vec.zeros 3
     centroid.addVec v.data[0].stripHomC() for v in @vertices
     centroid.multScalar(1.0 / 3.0)
     @dbgCentroidLine = new Line centroid, @vertices[0].data[2].normalizeC()

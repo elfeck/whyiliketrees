@@ -1,6 +1,6 @@
 class window.DirLight
 
-  constructor: (@lightDir, @lightInt = new Vec(3, [0.7, 0.7, 0.7])) ->
+  constructor: (@lightDir, @lightInt = new Vec([0.7, 0.7, 0.7])) ->
 
   addToProgram: (program, id = 0) ->
     program.addUniformGL id, "light_dir", @lightDir
@@ -12,7 +12,7 @@ class window.DirLight
 class window.PointLight
 
   constructor: (@lightPos, @lightAtt, @number = 0,
-                @lightInt = new Vec(3, [0.7, 0.7, 0.7])) ->
+                @lightInt = new Vec([0.7, 0.7, 0.7])) ->
     @debugCube = undefined
 
   addToProgram: (program, id = 0) ->
@@ -29,13 +29,13 @@ class window.PointLight
     @debugCube.setCenter @lightPos.copy() if @debugCube?
     return
 
-  linesFromPosition: (color = new Vec(3, [0.0, 1.0, 0.0]), num = 3) ->
+  linesFromPosition: (color = new Vec([0.0, 1.0, 0.0]), num = 3) ->
     dirs = [
-      new Vec(3, [1.0, 0.0, 0.0]), new Vec(3, [0.0, 1.0, 0.0]),
-      new Vec(3, [0.0, 0.0, 1.0]), new Vec(3, [1.0, 1.0, 0.0]),
-      new Vec(3, [1.0, 0.0, 1.0]), new Vec(3, [0.0, 1.0, 0.0]),
-      new Vec(3, [-1.0, 1.0, 0.0]), new Vec(3, [-1.0, 0.0, 1.0]),
-      new Vec(3, [0.0, -1.0, 1.0])
+      new Vec([1.0, 0.0, 0.0]), new Vec([0.0, 1.0, 0.0]),
+      new Vec([0.0, 0.0, 1.0]), new Vec([1.0, 1.0, 0.0]),
+      new Vec([1.0, 0.0, 1.0]), new Vec([0.0, 1.0, 0.0]),
+      new Vec([-1.0, 1.0, 0.0]), new Vec([-1.0, 0.0, 1.0]),
+      new Vec([0.0, -1.0, 1.0])
     ]
     num = Math.min(dirs.length, num)
     l = @lightAtt.data[0]
@@ -47,7 +47,7 @@ class window.PointLight
 
 class window.AttenuationLight
 
-  constructor: (@lightInt = new Vec(3, [0.3, 0.3, 0.3])) ->
+  constructor: (@lightInt = new Vec([0.3, 0.3, 0.3])) ->
 
   addToProgram: (program, id = 0) ->
     program.addUniformGL id, "light_attenu", @lightInt

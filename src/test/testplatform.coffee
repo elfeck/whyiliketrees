@@ -2,8 +2,8 @@ class TestPlatform
 
   constructor: (scene) ->
     @uid = window.getuid()
-    @color = new Vec 3, [0.8, 0.2, 0.2]
-    @offs = new Vec 3, [10, 0, 0]
+    @color = new Vec [0.8, 0.2, 0.2]
+    @offs = new Vec [10, 0, 0]
 
     @initGeom()
     @initShader scene
@@ -18,14 +18,14 @@ class TestPlatform
     return
 
   initGeom: ->
-    @upperLine = new Line new Vec(3), new Vec(3, [0.0, 1.0, 0.0])
+    @upperLine = new Line Vec.zeros(3), new Vec([0.0, 1.0, 0.0])
     @lowerLine = @upperLine.shiftBaseC -2.0
 
     size = 7
     @upperPoly = Polygon.regularFromLine @upperLine, size, 7, -1.0
     @lowerPoly = Polygon.regularFromLine @lowerLine, size - 1, 7
     @lowerPoly.rotateAroundLine @lowerLine, Math.PI / 7.0
-    @connPolys = Polygon.pConnectPolygons @upperPoly, @lowerPoly
+    @connPolys = Polygon.connectPolygons @upperPoly, @lowerPoly
     return
 
   initGfx: (scene) ->

@@ -14,35 +14,38 @@ class window.SpikyScene
     @fillshader = window.shaders["fillShader"]
 
     a = 0.4
-    intens = new Vec(1, [35])
-    lcol = new Vec(3, [1.0, 1.0, 1.0])
+    intens = new Vec([35])
+    lcol = new Vec([1.0, 1.0, 1.0])
     d = 12
     h = 10
-    @attenuLight = new AttenuationLight new Vec(3, [a, a, a])
+    @attenuLight = new AttenuationLight new Vec([a, a, a])
     @plights = []
-    @plights.push(new PointLight(new Vec(3, [d, h, d]), intens, 0, lcol))
-    #@plights.push(new PointLight(new Vec(3, [d, h, -d]), intens, 1, lcol))
-    #@plights.push(new PointLight(new Vec(3, [-d, h, d]), intens, 2, lcol))
-    @plights.push(new PointLight(new Vec(3, [-d, h, -d]), intens, 1, lcol))
+    @plights.push(new PointLight(new Vec([d, h, d]), intens, 0, lcol))
+    #@plights.push(new PointLight(new Vec([d, h, -d]), intens, 1, lcol))
+    #@plights.push(new PointLight(new Vec([-d, h, d]), intens, 2, lcol))
+    @plights.push(new PointLight(new Vec([-d, h, -d]), intens, 1, lcol))
 
     @entities = [
       #new SpikyFloor(this),
-      #new Spiky(this, new Vec(3, [0, 0, 0]))
+      #new Spiky(this, new Vec([0, 0, 0]))
       #new Curly(this)
       #new Growing(this)
       new TestSpiky(this)
     ]
 
-    a = new Vec 3, [1, 1, 0]
-    b = new Vec 3, [2, 4, 0]
-    c = new Vec 3, [5, 3, 0]
+    a = new Vec [1, 1, 0]
+    b = new Vec [2, 4, 0]
+    c = new Vec [5, 3, 0]
     Circle.fromPoints([a,b,c])
 
-    l1 = new Line(new Vec(3, [0, 0, 0]), new Vec(3, [1, 0, 0]))
-    l2 = new Line(new Vec(3, [0, 0, 0]), new Vec(3, [0, 1, 0]))
+    l1 = new Line(new Vec([0, 0, 0]), new Vec([1, 0, 0]))
+    l2 = new Line(new Vec([0, 0, 0]), new Vec([0, 1, 0]))
     Line.getIntersectionLine(l1, l2)
 
   delegateDrawGL: ->
+    @fillGeom.dbgReset()
+    @lineGeom.dbgReset()
+
     @fillGeom.updateGL()
     @fillGeom.drawGL()
     @lineGeom.updateGL()
@@ -55,3 +58,16 @@ class window.SpikyScene
     #@entities[0].rotateBaseLine -delta * 0.00005 * Math.PI
     #@entities[1].rotateBaseLine -delta * 0.00005 * Math.PI
     return
+
+  dbgGeomInfo: () ->
+    geomInfo = []
+    geomInfo.push 0 for i in [0..3]
+    geomInfo[0] += @fillGeom.size
+    geomInfo[0] += @lineGeom.size
+    geomInfo[1] += @fillGeom.dbgNumDraw
+    geomInfo[1] += @lineGeom.dbgNumDraw
+    geomInfo[2] += @fillGeom.dbgNumUpdates
+    geomInfo[2] += @lineGeom.dbgNumUpdates
+    geomInfo[3] += @fillGeom.dbgNumUploads
+    geomInfo[3] += @lineGeom.dbgNumUploads
+    return geomInfo

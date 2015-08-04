@@ -130,8 +130,8 @@ class window.Line
     rp2Y = (p3.y() + mub * p43.y())
     rp2Z = (p3.z() + mub * p43.z())
 
-    rp1 = new Vec 3, [rp1X, rp1Y, rp1Z]
-    rp2 = new Vec 3, [rp2X, rp2Y, rp2Z]
+    rp1 = new Vec [rp1X, rp1Y, rp1Z]
+    rp2 = new Vec [rp2X, rp2Y, rp2Z]
     line = Line.fromPoints(rp1, rp2)
     return line
 
@@ -149,7 +149,7 @@ class window.Plane
 
   # only for directional vectors, rotating around 0
   orthogonalInPlane: (vec) ->
-    line = new Line(new Vec(3), @norm)
+    line = new Line(Vec.zeros(3), @norm)
     return line.rotatePointC vec, Math.PI * 0.5
 
   @fromPoints: (points) ->
@@ -166,12 +166,12 @@ class window.Cube
     @polys = []
 
   gfxAddFill: (color) ->
-    ydir = new Vec 3, [0.0, 1.0, 0.0]
+    ydir = new Vec [0.0, 1.0, 0.0]
     sideL = @edgeLen / Math.sqrt(2)
     line = new Line @center.addVecC(ydir.multScalarC(-@edgeLen / 2.0)), ydir
     @polys.push Polygon.regularFromLine line, sideL, 4, -1
     @polys.push Polygon.regularFromLine line.shiftBaseC(@edgeLen), sideL, 4
-    @polys = @polys.concat Polygon.pConnectPolygons @polys[0], @polys[1]
+    @polys = @polys.concat Polygon.connectPolygons @polys[0], @polys[1]
     prims = []
     prims = prims.concat p.gfxAddFill color for p in @polys
     return prims

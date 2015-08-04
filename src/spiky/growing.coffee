@@ -2,25 +2,25 @@ class Growing
 
   constructor: (@scene) ->
     @uid = getuid()
-    @offs = new Vec 3
-    @color = new Vec 3, [1.0, 0.3, 0.3]
+    @offs = Vec.zeros 3
+    @color = new Vec [1.0, 0.3, 0.3]
 
     @initGeom()
     @initGfx()
 
   initGeom: ->
-    @baseline = new Line(new Vec(3, [0, 0, 0]), new Vec(3, [0, 1, 0]))
+    @baseline = new Line(new Vec([0, 0, 0]), new Vec([0, 1, 0]))
     @basepoly = Polygon.regularFromLine @baseline, 1, 5
 
-    @top = new Vec 3, [0, 4, 0], true
-    @connpolys = Polygon.connectPoint @basepoly, @top
+    @top = new Vec [0, 4, 0], true
+    @connpolys = Polygon.connectPolygons @basepoly, new Polygon [@top]
 
   initGfx: ->
     @scene.lineshader.addUniformGL @uid, "offs", @offs
     window.camera.addToProgram @scene.lineshader, @uid
 
     @scene.fillshader.addUniformGL @uid, "offs", @offs
-    @scene.fillshader.addUniformGL @uid, "num_lights", new Vec(1, [2])
+    @scene.fillshader.addUniformGL @uid, "num_lights", new Vec([2])
     window.camera.addToProgram @scene.fillshader, @uid
     @scene.attenuLight.addToProgram @scene.fillshader, @uid
     pl.addToProgram @scene.fillshader, @uid for pl in @scene.plights
@@ -28,7 +28,7 @@ class Growing
     @resetGfx()
 
   doLogic: (delta) ->
-    @top.addVec new Vec 3, [0, 0.001 * delta, 0]
+    @top.addVec new Vec [0, 0.001 * delta, 0]
     @ds.setModified()
 
   resetGfx: ->
