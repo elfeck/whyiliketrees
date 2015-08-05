@@ -6,6 +6,9 @@ class window.Vec
   copy: ->
     return new Vec @data.slice(), @asHom
 
+  isZeroVec: ->
+    return isFloatZero @length()
+
   setData: (data) ->
     @data = data.slice()
     return this
@@ -178,6 +181,23 @@ class window.Vec
 
   @angleBetween: (a, b) ->
     return Math.acos(Vec.scalarProd(a, b) / (a.length() * b.length()))
+
+  # only for dim = 3
+  # http://www.wolframalpha.com/input/
+  # ?i=sqrt%28%28p_1+%2B+s*q_1%29%C2%B2+%2B+%28p_2+%2B+s*q_2%29%
+  # C2%B2+%2B+%28p_3+%2B+s*q_3%29%C2%B2%29+%3D+r+for+s
+  @scalarForLengthMatch3: (point, dir, d) ->
+    p1 = point.x()
+    p2 = point.y()
+    p3 = point.z()
+    q1 = point.x()
+    q2 = point.y()
+    q3 = point.z()
+    s = 1.0 / (2 * (q1 * q1 + q2 * q2 + q3 * q3))
+    t1 = Math.pow((2*p1*q1 + 2*p2*q2 + 2*p3*q3), 2)
+    t2 = -4 * (q1*q1 + q2*q2 + q3*q3) * (p1*p1 + p2*p2 + p3*p3 - d*d)
+    t3 = -2*p1*q1 * 2*p2*q2 - 2*p3*q3
+    return s * Math.sqrt(t1 + t2 + t3)
 
   @zeros: (dim) ->
     data = []

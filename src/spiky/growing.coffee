@@ -17,6 +17,8 @@ class Growing
 
     @tp1 = new Vec [0, 4, 0], true
     @top = new Polygon [@tp1]
+    @top.normal = new Vec [0, 1, 0]
+    @top.normalSign = -1
     @connpolys = Polygon.connectPolygons @basepoly, @top
 
   initGfx: ->
@@ -33,18 +35,15 @@ class Growing
 
   once = true
   odd = true
+  onceonce = true
   doLogic: (delta) ->
     @acc += delta * 0.001
-    if @state == 0
-      @tp1.addVec new Vec [0, 0.0005 * delta, 0]
-      @connds.setModified()
 
     if @state == 1 && once
       once = false
       @top.replicatePoint 0
-      #@tp2 = @top.points[1]
-      @top.points[0].addVec(new Vec [0.5, 0, 0])
-      @top.points[1].addVec(new Vec [-0.5, 0, 0])
+      @top.points[0].addVec(new Vec [0.01, 0, 0])
+      @top.points[1].addVec(new Vec [-0.01, 0, 0])
       @connpolys = @basepoly.reconnect()
       @connpr = []
       @connpr = @connpr.concat p.gfxAddFill @color for p in @connpolys
@@ -53,28 +52,34 @@ class Growing
     if @state == 2 && once
       once = false
       @top.replicatePoint 0
-      @top.normal = new Vec [0, 1, 0]
-      @top.normalSign = -1.0
+      @top.points[0].addVec(@top.points[2].subVecC(@top.points[0]).
+        multScalar(0.5))
+      @circ = @top.getMinimalOutcircle()
       @toppr = @top.gfxAddFill @color
       @topds = new GeomData @uid, @scene.fillshader, @toppr, GL.TRIANGLES
       @scene.fillGeom.addData @topds
 
+    if @state == 0
+      @top.translateAlongNormal 0.0005 * delta
+      @connds.setModified()
     if @state == 1
       @top.points[0].addVec new Vec [0.1 * 0.001 * delta, 0, 0]
       @top.points[1].addVec new Vec [0.1 * -0.001 * delta, 0, 0]
       c.updateNormal() for c in @connpolys
       @connds.setModified()
     if @state == 2
-      @top.regularizeAbs(0.001 * delta * 0.1 * Math.PI)
-      @top.updateNormal()
+      @top.movePointsOntoCircleAbs @circ, new Vec([0, 0, 1]),
+        0.001 * delta * 0.1
       @toppr = @top.gfxAddFill @color
       @topds.prims = @toppr
       @topds.setModified()
       @connpolys = @basepoly.reconnect()
-      p.updateNormal() for p in @connpolys
       @connpr = []
       @connpr = @connpr.concat p.gfxAddFill @color for p in @connpolys
       @connds.prims = @connpr
+      @connds.setModified()
+    if @state == 3
+      @topds.setModified()
       @connds.setModified()
 
     if @acc > 5
@@ -96,6 +101,8 @@ class Growing
       @connds = new GeomData @uid, @scene.fillshader, @connpr, GL.TRIANGLES
       @scene.fillGeom.addData @baseds
       @scene.fillGeom.addData @connds
+    if(@topds?)
+      @topds.prims = []
 
   reset: ->
     @state = 0

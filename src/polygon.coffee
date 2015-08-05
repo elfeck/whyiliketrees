@@ -61,8 +61,24 @@ class window.Polygon
     @updateConnNormals()
     return
 
+  rotateAroundCentroid: (angle) ->
+    @rotateAroundLine(new Line(@getCentroid(), @normal), angle)
+    return
+
   translatePoints: (dir) ->
     p.addVec dir for p in @points
+    @updateNormal()
+    @updateConnNormals()
+    return
+
+  translateAlongNormal: (offset) ->
+    @translatePoints @normal.normalizeC().multScalar(offset)
+    return
+
+  scalePoints: (scale) ->
+    #for p in @points
+    @updateNormal()
+    @updateConnNormals()
     return
 
   getCentroid: ->
@@ -104,16 +120,24 @@ class window.Polygon
             okay &= circle.isPointWithin p for p in @points
             return circle if okay
       # find circle with 2 points only and normal as planenorm
+      circles = []
       for i in [0..n]
         for j in [0..n]
           continue if i == j
           p1 = @points[i]
           p2 = @points[j]
-          continue if p1.distance(p2) < eps #maybe max dist instead?
+          continue if p1.distance(p2) < eps
           circle = Circle.from2Points [p1, p2], @normal
           okay = true
           okay &= circle.isPointWithin p for p in @points
-          return circle if okay
+          circles.push circle if okay
+      maxr = 0
+      rc = null
+      for c in circles
+        if c.radius > maxr
+          rc = c
+          maxr = c.radius
+      return rc
     dprint "No Bounding Circle could be found"
     return undefined
 
@@ -142,6 +166,12 @@ class window.Polygon
     reguvec.data[i] = regu for i in [0..@points.length-1]
     return reguvec.subVec(distri).length() < eps
 
+  allPointsOnBoundingCircle: ->
+    circle = @getMinimalOutcircle()
+    okay = true
+    okay &= circle.isPointOn p for p in @points
+    return okay
+
   regularizeRel: (perc) ->
     if @points.length < 3
       dprint "attempt to regularize p/l-type polygon"
@@ -152,9 +182,24 @@ class window.Polygon
     # we dont want to move the last vertex at all
     for i in [0..@points.length-2]
       diff = perc * (regu - distri[i])
-      console.log i + ": " + diff
       circle.baseline.rotatePoint(@points[i + 1], diff)
       distri[i + 1] -= diff
+    @updateConnNormals()
+    return
+
+  # works only for point = center to circle
+  movePointsOntoCircleAbs: (circle, dir, offs) ->
+    dir = dir.normalizeC()
+    if not isFloatZero Vec.scalarProd(@normal, dir)
+      dprint "invalid direction in movePointsOntoCircle"
+      return
+    for p in @points
+      if not circle.isPointOn p
+        d = circle.radius - circle.baseline.base.subVecC(p).length()
+        o = Math.min d, offs
+        #console.log o
+        p.addVec dir.multScalar(o)
+    @updateNormal()
     @updateConnNormals()
     return
 
@@ -205,16 +250,19 @@ class window.Polygon
       return null
     allOn = true
     circle = @getMinimalOutcircle()
-    allWithin = true
-    allWithin &= circle.isPointOn p for p in @points
-    if not allWithin
-      dprint "Unable to get angle distri. not all points ON circle outline"
-      return null
+#    allWithin = true
+#    allWithin &= circle.isPointOn p for p in @points
+#    if not allWithin
+#      dprint "Unable to get angle distri. not all points ON circle outline"
+#      return null
     distri = []
     for i in [0..@points.length-1]
       ac = circle.baseline.base.subVecC(@points[i])
       bc = circle.baseline.base.subVecC(@points[(i + 1) %% @points.length])
-      distri.push(Vec.angleBetween(ac, bc))
+      if ac.isZeroVec() or bc.isZeroVec()
+        distri.push 0
+      else
+        distri.push(Vec.angleBetween(ac, bc))
     return distri
 
   getAngles: () ->

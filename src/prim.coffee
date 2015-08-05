@@ -152,6 +152,11 @@ class window.Plane
     line = new Line(Vec.zeros(3), @norm)
     return line.rotatePointC vec, Math.PI * 0.5
 
+  getOrthogonalPair: ->
+    v1 = Vec.orthogonalVec @norm
+    v2 = @orthogonalInPlane v1
+    return [v1, v2]
+
   @fromPoints: (points) ->
     v1 = points[1].subVecC points[0]
     v2 = points[2].subVecC points[0]
