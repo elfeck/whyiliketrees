@@ -49,7 +49,12 @@ class window.Geom
 
   updateGL: () ->
     return if @datasets.length == 0
-    if @modified || @size < @getMomentarySize()
+    if @modified
+      @recalcDSOffsets()
+      @uploadGL()
+      return
+    if @size < @getMomentarySize()
+      @recalcDSOffsets()
       @uploadGL()
       return
     minInd = @datasets.length
@@ -61,6 +66,7 @@ class window.Geom
         maxInd = Math.max(maxInd, i)
     if maxInd > -1
       @dbgNumUpdates++
+      #@dbgPrintUpdate minInd, maxInd
       GL.bindBuffer GL.ARRAY_BUFFER, @vb
       GL.bufferSubData GL.ARRAY_BUFFER, @datasets[minInd].vOffs * 4,
         new Float32Array(@fetchModVertexData(minInd, maxInd))
@@ -88,6 +94,9 @@ class window.Geom
   addData: (geomData) ->
     @modified = true
     @datasets.push geomData
+    @recalcDSOffsets()
+
+  recalcDSOffsets: ->
     iOffs = 0
     for ds in @datasets
       ds.iOffs = iOffs
@@ -122,7 +131,8 @@ class window.Geom
     return size
 
   bindGL: ->
-    @uploadGL() if @modified
+    # not sure why this was ever here
+    #@uploadGL() if @modified
     GL.bindBuffer GL.ARRAY_BUFFER, @vb
     GL.bindBuffer GL.ELEMENT_ARRAY_BUFFER, @ib
     GL.enableVertexAttribArray i for i in [0..@layout.length-1]

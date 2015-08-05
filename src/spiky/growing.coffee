@@ -12,7 +12,7 @@ class Growing
     @state = 0
 
   initGeom: ->
-    @baseline = new Line(new Vec([0, 0, 0]), new Vec([0, 1, 0]))
+    @baseline = new Line(new Vec([0, 0.01, 0]), new Vec([0, 1, 0]))
     @basepoly = Polygon.regularFromLine @baseline, 1, 5
 
     @tp1 = new Vec [0, 4, 0], true
@@ -32,6 +32,7 @@ class Growing
     @resetGfx()
 
   once = true
+  odd = true
   doLogic: (delta) ->
     @acc += delta * 0.001
     if @state == 0
@@ -53,6 +54,7 @@ class Growing
       once = false
       @top.replicatePoint 0
       @top.normal = new Vec [0, 1, 0]
+      @top.normalSign = -1.0
       @toppr = @top.gfxAddFill @color
       @topds = new GeomData @uid, @scene.fillshader, @toppr, GL.TRIANGLES
       @scene.fillGeom.addData @topds
@@ -62,17 +64,18 @@ class Growing
       @top.points[1].addVec new Vec [0.1 * -0.001 * delta, 0, 0]
       c.updateNormal() for c in @connpolys
       @connds.setModified()
-    if @state >= 2
+    if @state == 2
       @top.regularizeAbs(0.001 * delta * 0.1 * Math.PI)
       @top.updateNormal()
-      @toppr = @top.gfxAddFill Vec.green()
+      @toppr = @top.gfxAddFill @color
       @topds.prims = @toppr
       @topds.setModified()
-      @connpolys = @top.reconnect()
+      @connpolys = @basepoly.reconnect()
+      p.updateNormal() for p in @connpolys
       @connpr = []
       @connpr = @connpr.concat p.gfxAddFill @color for p in @connpolys
       @connds.prims = @connpr
-      #@connds.setModified()
+      @connds.setModified()
 
     if @acc > 5
       once = true
