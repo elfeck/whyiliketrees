@@ -41,7 +41,7 @@ class window.Polygon
         npts.push p
         continue
       okay = true
-      okay &= eps < p.distance(ex) for ex in npts
+      okay &&= eps < p.distance(ex) for ex in npts
       npts.push p if okay
     if npts.length < 3
       dprint "not able to find normal for polygon n>=3"
@@ -86,11 +86,12 @@ class window.Polygon
     c.addVec p for p in @points
     return c.multScalar(1.0 / @points.length)
 
+  # gets new plane not connected
   getPlane: ->
     if @points.length < 3
       dprint "attempt to get plane from point/line-type polygon"
       return null
-    return Plane.fromPoints @points
+    return new Plane @points[0].copy(), @normal
 
   # naive and bad runs in O(n^4). NOT tested for bad cases
   # might not even be the min circle, but just one that contains all pts
@@ -112,12 +113,12 @@ class window.Polygon
             p1 = @points[i]
             p2 = @points[j]
             p3 = @points[k]
-            if p1.distance(p2) < eps || p1.distance(p3) < eps ||
-               p2.distance(p3) < eps
+            if (p1.distance(p2) < eps || p1.distance(p3) < eps ||
+               p2.distance(p3) < eps) || Line.onLine [p1, p2, p3]
               continue
             circle = Circle.from3Points [p1, p2, p3]
             okay = true
-            okay &= circle.isPointWithin p for p in @points
+            okay &&= circle.isPointWithin p for p in @points
             return circle if okay
       # find circle with 2 points only and normal as planenorm
       circles = []
@@ -129,7 +130,7 @@ class window.Polygon
           continue if p1.distance(p2) < eps
           circle = Circle.from2Points [p1, p2], @normal
           okay = true
-          okay &= circle.isPointWithin p for p in @points
+          okay &&= circle.isPointWithin p for p in @points
           circles.push circle if okay
       maxr = 0
       rc = null
@@ -169,7 +170,7 @@ class window.Polygon
   allPointsOnBoundingCircle: ->
     circle = @getMinimalOutcircle()
     okay = true
-    okay &= circle.isPointOn p for p in @points
+    okay &&= circle.isPointOn p for p in @points
     return okay
 
   regularizeRel: (perc) ->
@@ -187,18 +188,22 @@ class window.Polygon
     @updateConnNormals()
     return
 
-  # works only for point = center to circle
-  movePointsOntoCircleAbs: (circle, dir, offs) ->
-    dir = dir.normalizeC()
-    if not isFloatZero Vec.scalarProd(@normal, dir)
-      dprint "invalid direction in movePointsOntoCircle"
-      return
+  movePointsOntoCircleAbs: (circle, offs) ->
     for p in @points
       if not circle.isPointOn p
-        d = circle.radius - circle.baseline.base.subVecC(p).length()
-        o = Math.min d, offs
-        #console.log o
-        p.addVec dir.multScalar(o)
+        dir = p.subVecC(circle.baseline.base)
+        pp = null
+        if dir.isZeroVec() || Line.onLine @points
+          for q in @points
+            if not isFloatZero(q.distance(circle.baseline.base))
+              pp = q
+          v = pp.subVecC(circle.baseline.base)
+          plane = @getPlane()
+          dir = plane.orthogonalInPlane(v)
+        dir.normalize()
+        dist = circle.radius - p.subVecC(circle.baseline.base).length()
+        dist = Math.min dist, offs
+        p.addVec(dir.multScalarC(dist))
     @updateNormal()
     @updateConnNormals()
     return
@@ -251,7 +256,7 @@ class window.Polygon
     allOn = true
     circle = @getMinimalOutcircle()
 #    allWithin = true
-#    allWithin &= circle.isPointOn p for p in @points
+#    allWithin &&= circle.isPointOn p for p in @points
 #    if not allWithin
 #      dprint "Unable to get angle distri. not all points ON circle outline"
 #      return null

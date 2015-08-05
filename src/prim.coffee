@@ -99,6 +99,13 @@ class window.Line
   rotatePointC: (point, angle) ->
     return @rotatePoint point.copy(), angle
 
+  pointOnLine: (point) ->
+    l = undefined
+    for i in [0..@dir.dim-1]
+      if not isFloatZero @dir.data[i]
+        l = (point.data[i] - @base.data[i]) / @dir.data[i]
+    return isFloatZero @base.addVecC(@dir.multScalar(l)).distance(point)
+
   @fromPoints: (p1, p2) ->
     return new Line p1.copy(), p2.subVecC(p1).normalize()
 
@@ -135,6 +142,13 @@ class window.Line
     line = Line.fromPoints(rp1, rp2)
     return line
 
+  @onLine: (points) ->
+    return true if points.length < 3
+    line = Line.fromPoints points[0], points[1]
+    for i in [2..points.length-1]
+      return false if not line.pointOnLine points[i]
+    return true
+
 class window.Plane
 
   constructor: (@base, unorm) ->
@@ -163,7 +177,7 @@ class window.Plane
     return new Plane points[0].copy(), Vec.crossProd3(v1, v2)
 
   @fromLine: (line) ->
-    return new Plane line.base, line.dir
+    return new Plane line.base.copy(), line.dir.copy().normalize()
 
 class window.Cube
 

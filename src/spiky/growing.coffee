@@ -53,7 +53,7 @@ class Growing
       once = false
       @top.replicatePoint 0
       @top.points[0].addVec(@top.points[2].subVecC(@top.points[0]).
-        multScalar(0.5))
+        multScalar(0.4))
       @circ = @top.getMinimalOutcircle()
       @toppr = @top.gfxAddFill @color
       @topds = new GeomData @uid, @scene.fillshader, @toppr, GL.TRIANGLES
@@ -68,9 +68,8 @@ class Growing
       c.updateNormal() for c in @connpolys
       @connds.setModified()
     if @state == 2
-      @top.movePointsOntoCircleAbs @circ, new Vec([0, 0, 1]),
-        0.001 * delta * 0.1
-      @toppr = @top.gfxAddFill @color
+      @top.movePointsOntoCircleAbs @circ, 0.001 * delta * 0.1
+      @toppr = @top.gfxAddFill Vec.green()
       @topds.prims = @toppr
       @topds.setModified()
       @connpolys = @basepoly.reconnect()

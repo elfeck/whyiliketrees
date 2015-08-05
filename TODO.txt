@@ -1,6 +1,9 @@
 TODO
 =======================================
 
+(*) Fix the problem that after one call in moveOntoCircle the dir-vec
+    gets changed because the point moves from the line hence not going into if
+
 --
 Geometry
 --
@@ -22,3 +25,4 @@ Graphics/Shader
 Other
 --
 (*) Fonts and text rendering
+(*) Dependend Planes see Polygon.getPlane and stuff
