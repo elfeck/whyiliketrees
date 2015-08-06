@@ -6,8 +6,8 @@ class window.Camera
     @icameraPos = new Vec [0.0, 0.0, 0.0]
     @cameraDir = new Vec [1.0, 0.0, 1.0]
 
-    @xRotAxis = new Line @icameraPos, new Vec [1.0, 0.0, 0.0]
-    @yRotAxis = new Line @icameraPos, new Vec [0.0, 1.0, 0.0]
+    @xRotAxis = new Line @icameraPos, new Vec([1.0, 0.0, 0.0]), true
+    @yRotAxis = new Line @icameraPos, new Vec([0.0, 1.0, 0.0]), true
 
     @viewRotAngle = 0.0
     @xRotAngle = 0.0

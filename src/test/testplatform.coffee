@@ -1,4 +1,4 @@
-class TestPlatform
+class window.TestPlatform
 
   constructor: (scene) ->
     @uid = window.getuid()

@@ -63,6 +63,3 @@ window.getShaderAttributes = (vertSrc) ->
 
 window.arrayEqual = (a, b) ->
   a.length is b.length and a.every (elem, i) -> elem is b[i]
-
-window.sqr = (a) ->
-  return a * a

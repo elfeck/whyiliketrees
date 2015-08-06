@@ -3,6 +3,7 @@ TODO
 
 (*) Fix the problem that after one call in moveOntoCircle the dir-vec
     gets changed because the point moves from the line hence not going into if
+(*) Scale Polygons in plane
 
 --
 Geometry

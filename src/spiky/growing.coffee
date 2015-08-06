@@ -1,4 +1,4 @@
-class Growing
+class window.Growing
 
   constructor: (@scene) ->
     @uid = getuid()

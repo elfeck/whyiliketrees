@@ -1,4 +1,4 @@
-class TestBasic
+class window.TestBasic
 
   constructor: (scene) ->
     @uid = window.getuid()
@@ -39,16 +39,18 @@ class TestBasic
     prims = prims.concat p.gfxAddFill @color for p in @polys
 
     for prim in prims
-      lprims = lprims.concat prim.dbgAddCentroidNormal()
+      lprims = lprims.concat prim.dbgAddVertexNormals()
 
     @ds = new GeomData @uid, @shader, prims, GL.TRIANGLES
     @lds = new GeomData @uid, @lshader, lprims, GL.LINES
-    #scene.lineGeom.addData @lds
+    scene.lineGeom.addData @lds
     scene.fillGeom.addData @ds
     return
 
   doLogic: (delta) ->
     @poly1.rotateAroundLine @pline1, Math.PI * delta * 0.0001
     @poly2.rotateAroundLine @pline1, Math.PI * delta * 0.0001
+    @ds.dbgUpdate()
     @ds.setModified()
+    @lds.setModified()
     return

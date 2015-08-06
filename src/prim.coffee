@@ -1,26 +1,12 @@
 class window.Line
 
-  constructor: (@base, @dir) ->
-    @lineSegs = []
-
-  gfxAddLineSeg: (bdist, length, color) ->
-    p1 = @pointAtDistanceC(bdist).toHomVecC()
-    p2 = @pointAtDistanceC(bdist + length).toHomVecC()
-    lineSeg =
-      bdist: bdist
-      length: length
-      points: [p1, p2]
-    @lineSegs.push lineSeg
-    verts = [new Vertex([p1, color]), new Vertex([p2, color])]
-    prim = new Primitive 2, verts
-    return [prim]
-
-  updateLineSegs: () ->
-    for ls in @lineSegs
-      ls.points[0].setTo(@base).addVec(@dir.multScalarC(ls.bdist)).toHomVec()
-      ls.points[1].setTo(@base).addVec(@dir.multScalarC(ls.bdist + ls.length))
-      ls.points[1].toHomVec()
-    return
+  constructor: (base, dir, dep = false) ->
+    if dep
+      @base = base
+      @dir = dir
+    else
+      @base = base.copy()
+      @dir = dir.normalizeC()
 
   pointAtDistanceC: (dist) ->
     return @base.addVecC(@dir.multScalarC(dist))
@@ -106,8 +92,8 @@ class window.Line
         l = (point.data[i] - @base.data[i]) / @dir.data[i]
     return isFloatZero @base.addVecC(@dir.multScalar(l)).distance(point)
 
-  @fromPoints: (p1, p2) ->
-    return new Line p1.copy(), p2.subVecC(p1).normalize()
+  @fromPointsC: (points) ->
+    return new Line points[0].copy(), points[1].subVecC(points[0]).normalize()
 
   # http://paulbourke.net/geometry/pointlineplane/
   # http://paulbourke.net/geometry/pointlineplane/calclineline.cs
@@ -139,20 +125,59 @@ class window.Line
 
     rp1 = new Vec [rp1X, rp1Y, rp1Z]
     rp2 = new Vec [rp2X, rp2Y, rp2Z]
-    line = Line.fromPoints(rp1, rp2)
+    line = Line.fromPointsC [rp1, rp2]
     return line
 
   @onLine: (points) ->
     return true if points.length < 3
-    line = Line.fromPoints points[0], points[1]
+    line = Line.fromPointsC points
     for i in [2..points.length-1]
       return false if not line.pointOnLine points[i]
     return true
 
+class window.LineSegment
+
+  constructor: (points, dep = false) ->
+    if dep
+      @points = points
+    else
+      @points = []
+      @points.push p.copy() for p in points
+    # maybe will cause trouble
+    p.asHom = true for p in @points
+
+  setTo: (lineSeg) ->
+    @points[i].setData lineSeg.points[i].data for i in [0..@points.length-1]
+
+  getLine: ->
+    return Line.fromPointsC @points
+
+  length: ->
+    return @points[0].distance @points[1]
+
+  gfxAddLineSeg: (color) ->
+    verts = [new Vertex([@points[0], color]), new Vertex([@points[1], color])]
+    prim = new Primitive 2, verts
+    return [prim]
+
+  @connectPoints: (points) ->
+    lineSegs = []
+    for i in [0..points.length-2]
+      lineSegs.push new LineSegment [points[i], points[i + 1]]
+    return lineSegs
+
+  @fromLineC: (line, length) ->
+    return new LineSegment [line.base.copy(), line.pointAtDistanceC(length)]
+
 class window.Plane
 
-  constructor: (@base, unorm) ->
-    @norm = unorm.copy().normalize()
+  constructor: (base, unorm, dep = false) ->
+    if dep
+      @base = base
+      @norm = unorm
+    else
+      @base = base.copy()
+      @norm = unorm.normalizeC()
 
   getPlaneParam: ->
     return -Vec.scalarProd(@norm, @base)
@@ -171,16 +196,17 @@ class window.Plane
     v2 = @orthogonalInPlane v1
     return [v1, v2]
 
-  @fromPoints: (points) ->
+  @fromPointsC: (points) ->
     v1 = points[1].subVecC points[0]
     v2 = points[2].subVecC points[0]
     return new Plane points[0].copy(), Vec.crossProd3(v1, v2)
 
-  @fromLine: (line) ->
+  @fromLineC: (line) ->
     return new Plane line.base.copy(), line.dir.copy().normalize()
 
 class window.Cube
 
+  # always dependend on center
   constructor: (@center, @edgeLen) ->
     @polys = []
 
@@ -204,18 +230,22 @@ class window.Cube
 
 class window.Circle
 
-  constructor: (@baseline, @radius) ->
+  constructor: (baseline, @radius, dep = false) ->
+    if dep
+      @baseline = baseline
+    else
+      @baseline = new Line baseline.base, baseline.dir
 
   isPointWithin: (point) ->
     return @isPointInside(point) || @isPointOn(point)
 
   isPointInside: (point) ->
-    plane = Plane.fromLine @baseline
+    plane = Plane.fromLineC @baseline
     return false if not plane.liesOnPlane point
     return @baseline.base.distance(point) < @radius
 
   isPointOn: (point) ->
-    plane = Plane.fromLine @baseline
+    plane = Plane.fromLineC @baseline
     if not plane.liesOnPlane point
      # console.log "shit"
       return false
@@ -229,14 +259,14 @@ class window.Circle
 
   #http://stackoverflow.com/questions/26901540/arc-in-qgraphicsscene/
   # 26903599#26903599
-  @from3Points: (points) ->
+  @from3PointsC: (points) ->
     a = points[0]
     b = points[1]
     c = points[2]
     bc = c.subVecC(b)
     ac = c.subVecC(a)
     ba = a.subVecC(b)
-    plane = Plane.fromPoints points
+    plane = Plane.fromPointsC points
     r = Math.abs(bc.length() / (2 * Math.sin(Vec.angleBetween(ac, ba))))
     o1 = plane.orthogonalInPlane(bc)
     o2 = plane.orthogonalInPlane(ba)
@@ -245,7 +275,7 @@ class window.Circle
     base = Line.getIntersectionLine(b1, b2).base
     return new Circle(new Line(base, plane.norm), r)
 
-  @from2Points: (points, planeNorm) ->
+  @from2PointsC: (points, planeNorm) ->
     if points.length == 2
       a = points[0]
       b = points[1]

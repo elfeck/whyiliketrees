@@ -100,7 +100,7 @@ class window.Polygon
       dprint "attempt to get minimal outcircle from point-type polygon"
       return null
     if @points.length == 2
-      return Circle.from2Points @points, @normal
+      return Circle.from2PointsC @points, @normal
     else
       circle = null
       okay = true
@@ -116,7 +116,7 @@ class window.Polygon
             if (p1.distance(p2) < eps || p1.distance(p3) < eps ||
                p2.distance(p3) < eps) || Line.onLine [p1, p2, p3]
               continue
-            circle = Circle.from3Points [p1, p2, p3]
+            circle = Circle.from3PointsC [p1, p2, p3]
             okay = true
             okay &&= circle.isPointWithin p for p in @points
             return circle if okay
@@ -128,7 +128,7 @@ class window.Polygon
           p1 = @points[i]
           p2 = @points[j]
           continue if p1.distance(p2) < eps
-          circle = Circle.from2Points [p1, p2], @normal
+          circle = Circle.from2PointsC [p1, p2], @normal
           okay = true
           okay &&= circle.isPointWithin p for p in @points
           circles.push circle if okay
@@ -152,13 +152,13 @@ class window.Polygon
     if @points.length < 3
       dprint "attempt to get centroid axis from p/l-type polygon"
       return null
-    return new Line @getCentroid(), @normal.copy()
+    return new Line @getCentroid(), @normal
 
-  getCentroidAxisDebug: (length, color) ->
-    if @points.length < 3
-      dprint "attempt to get centroid axis from p/l-type polygon"
-      return null
-    return @getCentroidAxis().getLineSegC 0, length, color
+  #getCentroidAxisDebug: (length, color) ->
+  #  if @points.length < 3
+  #    dprint "attempt to get centroid axis from p/l-type polygon"
+  #    return null
+  #  return @getCentroidAxis().getLineSegC 0, length, color
 
   isRegular: (eps) ->
     distri = new Vec @getCircularAngleDistribution()

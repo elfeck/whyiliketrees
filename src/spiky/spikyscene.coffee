@@ -28,8 +28,8 @@ class window.SpikyScene
     @entities = [
       new SpikyFloor(this),
       #new Spiky(this, new Vec([0, 0, 0]))
-      #new Curly(this)
-      new Growing(this)
+      new Curly(this)
+      #new Growing(this)
       #new TestSpiky(this)
     ]
 
@@ -44,7 +44,7 @@ class window.SpikyScene
     return
 
   delegateDoLogic: (delta) ->
-    @entities[1].reset() if window.input.keyPressed 82
+    #@entities[1].reset() if window.input.keyPressed 82
     e.doLogic delta for e in @entities
     #@entities[0].rotateBaseLine -delta * 0.00005 * Math.PI
     #@entities[1].rotateBaseLine -delta * 0.00005 * Math.PI
