@@ -16,12 +16,10 @@ class window.Line
 
   setBase: (newBase) ->
     @base.setTo newBase
-    @updateLineSegs()
     return
 
   setDir: (newDir) ->
     @dir.setTo newDir
-    @updateLineSegs()
     return
 
   getRotationMatrix: (angle, rmat = new Mat(4, 4)) ->
@@ -196,6 +194,26 @@ class window.Plane
     v2 = @orthogonalInPlane v1
     return [v1, v2]
 
+  # https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
+  intersectLine: (line) ->
+    if isFloatZero(Vec.scalarProd @norm, line.dir)
+      dprint "trying to intersect parallel plane and line"
+      return null
+    d = Vec.scalarProd(@base.subVecC(line.base), @norm) /
+      Vec.scalarProd(line.dir, @norm)
+    p = line.pointAtDistanceC d
+    return p
+
+  intersectPlane: (p) ->
+    if isFloatZero(Vec.scalarProd(@norm, p.norm) - 1)
+      dprint "Cannot intersect parallel planes"
+      return null
+    dir = Vec.crossProd3(@norm, p.norm).normalize()
+    orth = p.orthogonalInPlane dir
+    lineInP = new Line p.base, orth
+    lineBase = @intersectLine lineInP
+    return new Line lineBase, dir
+
   @fromPointsC: (points) ->
     v1 = points[1].subVecC points[0]
     v2 = points[2].subVecC points[0]
@@ -203,6 +221,15 @@ class window.Plane
 
   @fromLineC: (line) ->
     return new Plane line.base.copy(), line.dir.copy().normalize()
+
+  @xyPlane: -> return new Plane(new Vec([0, 0, 0]), new Vec([0, 0, 1]))
+  @xzPlane: -> return new Plane(new Vec([0, 0, 0]), new Vec([0, 1, 0]))
+  @yzPlane: -> return new Plane(new Vec([0, 0, 0]), new Vec([1, 0, 0]))
+
+  # http://stackoverflow.com/questions/16025620/
+  # finding-the-line-along-the-the-intersection-of-two-planes
+  @intersectPlanes: (p1, p2) ->
+    return p1.intersectPlane p2
 
 class window.Cube
 

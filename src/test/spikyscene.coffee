@@ -31,6 +31,7 @@ class window.SpikyScene
       new Curly(this)
       #new Growing(this)
       #new TestSpiky(this)
+      #new SimpleTest(this)
     ]
 
   delegateDrawGL: ->

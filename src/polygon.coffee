@@ -57,8 +57,8 @@ class window.Polygon
 
   rotateAroundLine: (line, angle) ->
     line.rotatePoint p, angle for p in @points
-    @updateNormal()
-    @updateConnNormals()
+    #@updateNormal()
+    #@updateConnNormals()
     return
 
   rotateAroundCentroid: (angle) ->
@@ -67,8 +67,8 @@ class window.Polygon
 
   translatePoints: (dir) ->
     p.addVec dir for p in @points
-    @updateNormal()
-    @updateConnNormals()
+    #@updateNormal()
+    #@updateConnNormals()
     return
 
   translateAlongNormal: (offset) ->
@@ -76,9 +76,22 @@ class window.Polygon
     return
 
   scalePoints: (scale) ->
-    #for p in @points
-    @updateNormal()
-    @updateConnNormals()
+    projPlane = Plane.xyPlane()
+    if isFloatZero(1 - Vec.scalarProd(@normal, projPlane.norm))
+      cent = @getCentroid()
+      @translatePoints cent.multScalarC(-1.0)
+      p.multScalar scale for p in @points
+      @translatePoints cent.multScalarC(1.0)
+    else
+      @intersLine = Plane.intersectPlanes projPlane, @getPlane()
+      @angle = -Math.acos(Vec.scalarProd @normal, projPlane.norm)
+
+      @rotateAroundLine @intersLine, @angle
+      cent = @getCentroid()
+      @translatePoints cent.multScalarC(-1.0)
+      p.multScalar scale for p in @points
+      @translatePoints cent.multScalarC(1.0)
+      @rotateAroundLine @intersLine, -@angle
     return
 
   getCentroid: ->

@@ -5,15 +5,18 @@ class window.Mat
 
   toId: ->
     if(not @dimX == @dimY)
-      window.dprint "Cannot load id on unsym Mat in math.coffe::Mat"
+      dprint "Cannot load id on unsym Mat in math.coffe::Mat"
     else
       @data[i * @dimX + i] = 1.0 for i in [0..@dimY - 1] by 1
     return this
 
+  at: (x, y) ->
+    return @data[y * @dimX + x]
+
   multFromLeft: (b) ->
     a = this
     if a.dimX is not b.dimY
-      window.dprint "Cannot mult 2 Mat with mismatched dims in math.coffee"
+      dprint "Cannot mult 2 Mat with mismatched dims in math.coffee"
     c = new Mat b.dimX, a.dimY
     for ar in [0..a.dimY-1] by 1
       for bc in [0..b.dimX-1] by 1
@@ -26,7 +29,7 @@ class window.Mat
   multFromRight: (a) ->
     b = this
     if a.dimX is not b.dimY
-      window.dprint "Cannot mult 2 Mat with mismatched dims in math.coffee"
+      dprint "Cannot mult 2 Mat with mismatched dims in math.coffee"
     c = new Mat b.dimX, a.dimY
     for ar in [0..a.dimY-1] by 1
       for bc in [0..b.dimX-1] by 1
@@ -35,6 +38,14 @@ class window.Mat
             b.data[b.dimX * ac + bc]
     @setData c.data
     return this
+
+  det: () ->
+    if not (@dimX == 3 && @dimY == 3)
+      dprint "missing: det from mat != 3x3"
+      return undefined
+    return @at(0, 0) * (@at(1,1) * @at(2,2) - @at(1,2) * @at(2,1)) -
+      @at(0,1) * (@at(1,0) * @at(2,2) - @at(1,2) * @at(2,0)) +
+      @at(0,2) * (@at(1,0) * @at(2,1) - @at(1,1) * @at(2,0))
 
   setTo: (m) ->
     @dimX = m.dimX
