@@ -63,3 +63,7 @@ window.getShaderAttributes = (vertSrc) ->
 
 window.arrayEqual = (a, b) ->
   a.length is b.length and a.every (elem, i) -> elem is b[i]
+
+window.rndBetween = (a, b) ->
+  r = Math.random() * (b - a)
+  return r + a

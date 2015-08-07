@@ -1,10 +1,6 @@
 TODO
 =======================================
 
-(*) Fix the problem that after one call in moveOntoCircle the dir-vec
-    gets changed because the point moves from the line hence not going into if
-(*) Figure out why order is important for scaling: rotate then translate
-
 --
 Geometry
 --
@@ -27,3 +23,8 @@ Other
 --
 (*) Fonts and text rendering
 (*) Dependend Planes see Polygon.getPlane and stuff
+
+--
+Minor
+--
+(*) Figure out why order is important for scaling: rotate then translate

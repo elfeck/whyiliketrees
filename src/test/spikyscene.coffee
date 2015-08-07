@@ -28,10 +28,13 @@ class window.SpikyScene
     @entities = [
       new SpikyFloor(this),
       #new Spiky(this, new Vec([0, 0, 0]))
-      new Curly(this)
+      #new Curly(this)
       #new Growing(this)
       #new TestSpiky(this)
       #new SimpleTest(this)
+      new Spike(this)
+      #new Circling(this)
+      #new Simple(this)
     ]
 
   delegateDrawGL: ->

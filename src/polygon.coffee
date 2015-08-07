@@ -57,8 +57,6 @@ class window.Polygon
 
   rotateAroundLine: (line, angle) ->
     line.rotatePoint p, angle for p in @points
-    #@updateNormal()
-    #@updateConnNormals()
     return
 
   rotateAroundCentroid: (angle) ->
@@ -67,8 +65,6 @@ class window.Polygon
 
   translatePoints: (dir) ->
     p.addVec dir for p in @points
-    #@updateNormal()
-    #@updateConnNormals()
     return
 
   translateAlongNormal: (offset) ->
@@ -198,27 +194,39 @@ class window.Polygon
       diff = perc * (regu - distri[i])
       circle.baseline.rotatePoint(@points[i + 1], diff)
       distri[i + 1] -= diff
-    @updateConnNormals()
     return
 
-  movePointsOntoCircleAbs: (circle, offs) ->
+  #http://math.stackexchange.com/questions/1387507/
+  #move-point-onto-circle-outline-in-r3/1387554#1387554
+  movePointsOntoCircleAbs: (circle, offs, dir = null) ->
     for p in @points
       if not circle.isPointOn p
-        dir = p.subVecC(circle.baseline.base)
-        pp = null
-        if dir.isZeroVec() || Line.onLine @points
-          for q in @points
-            if not isFloatZero(q.distance(circle.baseline.base))
-              pp = q
-          v = pp.subVecC(circle.baseline.base)
-          plane = @getPlane()
-          dir = plane.orthogonalInPlane(v)
-        dir.normalize()
-        dist = circle.radius - p.subVecC(circle.baseline.base).length()
+        if dir == null
+          dir = p.subVecC(circle.baseline.base)
+          pp = null
+          if dir.isZeroVec() || Line.onLine @points
+            for q in @points
+              if not isFloatZero(q.distance(circle.baseline.base))
+                pp = q
+            v = pp.subVecC(circle.baseline.base)
+            plane = @getPlane()
+            dir = plane.orthogonalInPlane(v)
+          dir.normalize()
+          dist = circle.radius - p.subVecC(circle.baseline.base).length()
+        else
+          dir = dir.normalizeC()
+          if isFloatZero(circle.baseline.base.distance(p))
+            dist = circle.radius
+          else
+            l = circle.baseline.base.distance(p)
+            r = circle.radius
+            theta = Vec.angleBetween circle.baseline.base.subVecC(p), dir
+            #console.log "t: " + theta
+            #console.log "sin(t): " + Math.cos(theta)
+            dist = Math.sqrt(r * r - l * l * Math.pow(Math.sin(theta), 2)) +
+              l * Math.cos(theta)
         dist = Math.min dist, offs
         p.addVec(dir.multScalarC(dist))
-    @updateNormal()
-    @updateConnNormals()
     return
 
   regularizeAbs: (angle) ->
@@ -237,7 +245,6 @@ class window.Polygon
       diff = Math.max a, total if total <= 0
       circle.baseline.rotatePoint(@points[i + 1], diff)
       distri[i + 1] -= diff
-    @updateConnNormals()
     return
 
   movePointAlongCircleRel: (index, perc) ->
@@ -248,7 +255,6 @@ class window.Polygon
     circle = @getMinimalOutcircle()
     angle = distri[index] * perc
     circle.baseline.rotatePoint(@points[index], angle)
-    @updateConnNormals()
     return
 
   movePointAlongCircleAbs: (index, angle) ->
@@ -259,7 +265,6 @@ class window.Polygon
     circle = @getMinimalOutcircle()
     angle = Math.min(distri[index], angle)
     circle.baseline.rotatePoint(@points[index], angle)
-    @updateConnNormals()
     return
 
   getCircularAngleDistribution: () ->
