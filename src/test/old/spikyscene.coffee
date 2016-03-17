@@ -1,9 +1,9 @@
 class window.SpikyScene
 
   constructor: ->
-    console.log("spiky")
+    #console.log("spiky")
     @debugName = "Spiky"
-    window.camera.cameraPos.setData [0, -10, -40]
+    #window.camera.cameraPos.setData [0, -10, -40]
 
     @lineGeom = new Geom [4, 3]
     @lineGeom.initGL()
@@ -13,7 +13,7 @@ class window.SpikyScene
     @lineshader = window.shaders["lineShader"]
     @fillshader = window.shaders["fillShader"]
 
-    a = 0.4
+    a = 0.2
     intens = new Vec([35])
     lcol = new Vec([1.0, 1.0, 1.0])
     d = 12

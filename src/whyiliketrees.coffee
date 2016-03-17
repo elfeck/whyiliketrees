@@ -31,7 +31,7 @@ class window.Display
     @deltaAvg = 0
 
     @scenes = []
-    @currentScene = 1
+    @currentScene = 0
 
   initGL: (canvas) ->
     canvas.setAttribute("width", @width)
@@ -57,6 +57,7 @@ class window.Display
     window.input = new Input canvas
     window.camera = new Camera
     window.initShadersGL()
+    @scenes.push new SadScene
     @scenes.push new TestScene
     @scenes.push new SpikyScene
     window.dbgSetInfo 1, "Current Scene: [" + @currentScene + ", " +

@@ -1,7 +1,7 @@
 class window.TestScene
 
   constructor: ->
-    console.log("test")
+    #console.log("test")
     @debugName = "Test"
     @accTime = 0
 
